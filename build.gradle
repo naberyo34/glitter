@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.qqviaja.gradle.MybatisGenerator' version '2.5'
+	id 'co.uzzu.dotenv.gradle' version '4.0.0'
 }
 
 group = 'com.example'
@@ -17,6 +19,20 @@ repositories {
 	mavenCentral()
 }
 
+mybatisGenerator {
+	verbose = true
+	configFile = 'src/main/resources/generatorConfig.xml'
+	mybatisProperties = [
+		'jdbcUrl'        : env.DB_URL.value,
+		'jdbcUsername'   : env.DB_USERNAME.value,
+		'jdbcPassword'   : env.DB_PASSWORD.value,
+	]
+	dependencies {
+		mybatisGenerator 'org.mybatis.generator:mybatis-generator-core:1.4.2'
+		mybatisGenerator 'org.postgresql:postgresql'
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -27,6 +43,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 }
 
 tasks.named('test') {
