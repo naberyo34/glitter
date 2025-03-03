@@ -1,6 +1,4 @@
-<!DOCTYPE generatorConfiguration PUBLIC
-  "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
-  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
   <context id="postgres" targetRuntime="MyBatis3DynamicSql">
     <jdbcConnection
@@ -9,9 +7,10 @@
       userId="${jdbcUsername}"
       password="${jdbcPassword}"
     />
-    <javaModelGenerator targetPackage="com.example.demo.db.model" targetProject="src/main/java"/>
-    <sqlMapGenerator targetPackage="com.example.demo.db.mapper" targetProject="src/main/resources"/>
-    <javaClientGenerator type="XMLMAPPER" targetPackage="com.example.demo.db.mapper" targetProject="src/main/java"/>
+    <javaModelGenerator targetPackage="com.example.demo.model" targetProject="src/main/java" />
+    <sqlMapGenerator targetPackage="com.example.demo.mapper" targetProject="src/main/resources" />
+    <javaClientGenerator type="XMLMAPPER" targetPackage="com.example.demo.mapper"
+      targetProject="src/main/java" />
     <table schema="public" tableName="task" />
   </context>
 </generatorConfiguration>
