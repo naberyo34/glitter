@@ -14,14 +14,9 @@ public class DemoApplication {
 	}
 
 	User[] users = {
-		new User("たま", "年中パーカー着てます"),
-		new User("りん", "眼鏡変えました")
+			new User("たま", "年中パーカー着てます"),
+			new User("りん", "眼鏡変えました")
 	};
-
-	@RequestMapping("/")
-	public String index() {
-		return "Hello Spring Boot";
-	}
 
 	@RequestMapping("/user/{number}")
 	public User user(@PathVariable int number) {
@@ -44,7 +39,7 @@ public class DemoApplication {
 		public String getProfile() {
 			return profile;
 		}
-		
+
 		public String getUsername() {
 			return username;
 		}
