@@ -7,7 +7,7 @@
       userId="${jdbcUsername}"
       password="${jdbcPassword}"
     />
-    <javaModelGenerator targetPackage="com.example.demo.model" targetProject="src/main/java" />
+    <javaModelGenerator targetPackage="com.example.demo.domain" targetProject="src/main/java" />
     <sqlMapGenerator targetPackage="com.example.demo.mapper" targetProject="src/main/resources" />
     <javaClientGenerator type="XMLMAPPER" targetPackage="com.example.demo.mapper"
       targetProject="src/main/java" />
