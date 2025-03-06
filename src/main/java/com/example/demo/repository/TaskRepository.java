@@ -1,20 +1,76 @@
 package com.example.demo.mapper;
 
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+
 import java.util.List;
-import org.springframework.stereotype.Repository;
-import com.example.demo.domain.Task;
-import com.example.demo.mapper.TaskMapper;
+
 import org.mybatis.dynamic.sql.select.SelectDSLCompleter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.domain.Task;
+
 
 @Repository
 public class TaskRepository {
-  private final TaskMapper taskMapper;
+  @Autowired
+  private TaskMapper taskMapper;
 
-  public TaskRepository(TaskMapper taskMapper) {
-    this.taskMapper = taskMapper;
+  /**
+   * タスクを追加する
+   * @param value タスクの内容
+   */
+  @Transactional
+  public void add(String value) {
+    Task task = new Task();
+    task.setValue(value);
+    task.setIsDone(false);
+    taskMapper.insert(task);
   }
 
+  /**
+   * タスクを更新する
+   * @param task
+   */
+  @Transactional
+  public void updateById(Task task) {
+    taskMapper.updateByPrimaryKey(task);
+  }
+
+  /**
+   * id からタスクを取得する
+   * @param id
+   * @return 合致するタスク (存在しない場合は null)
+   */
+  public Task findById(Integer id) {
+    return taskMapper.selectByPrimaryKey(id).orElse(null);
+  }
+
+  /**
+   * すべてのタスクを取得する
+   * 
+   * @return タスクのリスト
+   */
   public List<Task> findAll() {
     return taskMapper.select(SelectDSLCompleter.allRows());
   };
+
+  /**
+   * 未完了のタスクを取得する
+   * 
+   * @return タスクのリスト
+   */
+  public List<Task> findInProgress() {
+    return taskMapper.select(c -> c.where(TaskDynamicSqlSupport.isDone, isEqualTo(false)));
+  }
+
+  /**
+   * 完了したタスクを取得する
+   * 
+   * @return タスクのリスト
+   */
+  public List<Task> findDone() {
+    return taskMapper.select(c -> c.where(TaskDynamicSqlSupport.isDone, isEqualTo(true)));
+  }
 }
