@@ -43,8 +43,25 @@ public class TaskRepository {
    * @param id
    * @return 合致するタスク (存在しない場合は null)
    */
+  @Transactional
   public Task findById(Integer id) {
     return taskMapper.selectByPrimaryKey(id).orElse(null);
+  }
+
+  /**
+   * id から取得したタスクの完了状態をトグルする
+   * @param id
+   * @return
+   */
+  @Transactional
+  public Task toggleStatusById(Integer id) {
+    Task task = taskMapper.selectByPrimaryKey(id).orElse(null);
+    if (task == null) {
+      return null;
+    }
+    task.setIsDone(!task.getIsDone());
+    taskMapper.updateByPrimaryKey(task);
+    return task;
   }
 
   /**
@@ -52,8 +69,9 @@ public class TaskRepository {
    * 
    * @return タスクのリスト
    */
+  @Transactional
   public List<Task> findAll() {
-    return taskMapper.select(SelectDSLCompleter.allRows());
+    return taskMapper.select(SelectDSLCompleter.allRowsOrderedBy(TaskDynamicSqlSupport.id.descending()));
   };
 
   /**
@@ -61,8 +79,9 @@ public class TaskRepository {
    * 
    * @return タスクのリスト
    */
+  @Transactional
   public List<Task> findInProgress() {
-    return taskMapper.select(c -> c.where(TaskDynamicSqlSupport.isDone, isEqualTo(false)));
+    return taskMapper.select(c -> c.where(TaskDynamicSqlSupport.isDone, isEqualTo(false)).orderBy(TaskDynamicSqlSupport.id.descending()));
   }
 
   /**
@@ -70,7 +89,8 @@ public class TaskRepository {
    * 
    * @return タスクのリスト
    */
+  @Transactional
   public List<Task> findDone() {
-    return taskMapper.select(c -> c.where(TaskDynamicSqlSupport.isDone, isEqualTo(true)));
+    return taskMapper.select(c -> c.where(TaskDynamicSqlSupport.isDone, isEqualTo(true)).orderBy(TaskDynamicSqlSupport.id.descending()));
   }
 }

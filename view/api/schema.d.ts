@@ -4,6 +4,46 @@
  */
 
 export interface paths {
+    "/task/{id}/toggle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * タスクの状態（進行中、完了）をトグル
+         * @description 指定したIDのタスクの状態（進行中、完了）をトグルします。
+         */
+        post: operations["editTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task/add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * タスクの追加
+         * @description 新しいタスクを追加します。
+         */
+        post: operations["add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/task/{id}": {
         parameters: {
             query?: never;
@@ -103,6 +143,48 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    editTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Task"];
+                };
+            };
+        };
+    };
+    add: {
+        parameters: {
+            query: {
+                value: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     findTask: {
         parameters: {
             query?: never;

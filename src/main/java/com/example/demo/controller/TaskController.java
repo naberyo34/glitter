@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +15,7 @@ import com.example.demo.mapper.TaskRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+@CrossOrigin(origins = "${env.client-url}")
 @RestController
 @RequestMapping("/task")
 public class TaskController {
@@ -54,5 +56,23 @@ public class TaskController {
   @GetMapping("/{id}")
   public Task findTask(@PathVariable Integer id) {
     return taskRepository.findById(id);
+  }
+
+  @Operation(
+    summary = "タスクの追加",
+    description = "新しいタスクを追加します。"
+  )
+  @PostMapping("/add")
+  public void add(String value) {
+    taskRepository.add(value);
+  }
+
+  @Operation(
+    summary = "タスクの状態（進行中、完了）をトグル",
+    description = "指定したIDのタスクの状態（進行中、完了）をトグルします。"
+  )
+  @PostMapping("/{id}/toggle")
+  public Task editTask(@PathVariable Integer id) {
+    return taskRepository.toggleStatusById(id);
   }
 }
