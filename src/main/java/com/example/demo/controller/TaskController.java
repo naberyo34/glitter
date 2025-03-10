@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Task;
-import com.example.demo.mapper.TaskRepository;
+import com.example.demo.repository.TaskRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 
