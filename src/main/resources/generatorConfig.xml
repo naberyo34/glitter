@@ -10,9 +10,6 @@
     <javaModelGenerator targetPackage="com.example.demo.generated" targetProject="src/main/java" />
     <javaClientGenerator type="XMLMAPPER" targetPackage="com.example.demo.generated"
       targetProject="src/main/java" />
-    <table schema="public" tableName="task">
-      <generatedKey column="id" sqlStatement="JDBC" />
-    </table>
     <table schema="public" tableName="user" />
     <table schema="public" tableName="post">
       <generatedKey column="id" sqlStatement="JDBC" />

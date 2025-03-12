@@ -4,47 +4,7 @@
  */
 
 export interface paths {
-    "/task/{id}/toggle": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * タスクの状態（進行中、完了）をトグル
-         * @description 指定したIDのタスクの状態（進行中、完了）をトグルします。
-         */
-        post: operations["editTask"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/task/add": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * タスクの追加
-         * @description 新しいタスクを追加します。
-         */
-        post: operations["add"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/task/{id}": {
+    "/user/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -52,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * タスクの取得
-         * @description 指定したIDのタスクを取得します。
+         * IDからユーザーを取得
+         * @description IDからユーザーを取得します。
          */
-        get: operations["findTask"];
+        get: operations["findById"];
         put?: never;
         post?: never;
         delete?: never;
@@ -64,7 +24,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/in_progress": {
+    "/user/{id}/post": {
         parameters: {
             query?: never;
             header?: never;
@@ -72,10 +32,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * タスクの取得（未着手）
-         * @description 未着手のタスクを取得します。
+         * ユーザーの投稿を取得
+         * @description ユーザーの投稿を取得します。
          */
-        get: operations["findInProgress"];
+        get: operations["getUserPosts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -84,7 +44,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/task/done": {
+    "/user/me": {
         parameters: {
             query?: never;
             header?: never;
@@ -92,30 +52,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * タスクの取得（完了）
-         * @description 完了したタスクを取得します。
+         * セッションユーザーを取得
+         * @description セッションユーザーを取得します。
          */
-        get: operations["findDone"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/task/all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * タスクの全件取得
-         * @description 全てのタスクを取得します。
-         */
-        get: operations["findAll"];
+        get: operations["getSessionUser"];
         put?: never;
         post?: never;
         delete?: never;
@@ -128,11 +68,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Task: {
+        UserDto: {
+            id?: string;
+            username?: string;
+            profile?: string;
+            email?: string;
+        };
+        Post: {
             /** Format: int32 */
             id?: number;
-            value?: string;
-            isDone?: boolean;
+            userId?: string;
+            content?: string;
+            /** Format: date-time */
+            createdAt?: string;
         };
     };
     responses: never;
@@ -143,12 +91,12 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    editTask: {
+    findById: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -160,37 +108,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Task"];
+                    "*/*": components["schemas"]["UserDto"];
                 };
             };
         };
     };
-    add: {
-        parameters: {
-            query: {
-                value: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    findTask: {
+    getUserPosts: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -202,12 +130,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Task"];
+                    "*/*": components["schemas"]["Post"][];
                 };
             };
         };
     };
-    findInProgress: {
+    getSessionUser: {
         parameters: {
             query?: never;
             header?: never;
@@ -222,47 +150,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Task"][];
-                };
-            };
-        };
-    };
-    findDone: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Task"][];
-                };
-            };
-        };
-    };
-    findAll: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Task"][];
+                    "*/*": components["schemas"]["UserDto"];
                 };
             };
         };
