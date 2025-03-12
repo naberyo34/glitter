@@ -1,13 +1,19 @@
 package com.example.demo.domain.User;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * ユーザー DTO
  * パスワードや認証情報を含まないユーザー情報です。
  */
 public class UserDto {
+  @Schema(description = "ユーザー ID", example = "example", required = true)
   private String id;
+  @Schema(description = "ユーザー名", example = "太郎", required = true)
   private String username;
+  @Schema(description = "プロフィール", example = "こんにちは。", required = true)
   private String profile;
+  @Schema(description = "メールアドレス", example = "example@example.com", required = true)
   private String email;
 
   public UserDto(String id, String username, String profile, String email) {

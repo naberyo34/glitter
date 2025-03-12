@@ -2,11 +2,13 @@ package com.example.demo.domain.User;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.domain.Post.PostDto;
 import com.example.demo.domain.Post.PostRepository;
 import com.example.demo.generated.Post;
 import com.example.demo.generated.User;
@@ -46,7 +48,8 @@ public class UserService {
    * @return 投稿のリスト
    */
   @Transactional
-  public List<Post> getUserPosts(String userId) {
-    return postRepository.findByUserId(userId);
+  public List<PostDto> getUserPosts(String userId) {
+    Stream<Post> posts = postRepository.findByUserId(userId).stream();
+    return posts.map(p -> new PostDto(p.getId(), p.getUserId(), p.getContent(), p.getCreatedAt())).toList();
   }
 }

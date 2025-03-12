@@ -33,7 +33,7 @@ export interface paths {
         };
         /**
          * ユーザーの投稿を取得
-         * @description ユーザーの投稿を取得します。
+         * @description ユーザーの投稿を取得します。見つからなかった場合でも、404 ではなく空配列を返します。
          */
         get: operations["getUserPosts"];
         put?: never;
@@ -53,7 +53,7 @@ export interface paths {
         };
         /**
          * セッションユーザーを取得
-         * @description セッションユーザーを取得します。
+         * @description セッションユーザーを取得します。見つからなかった場合でも、404 ではなく null を返します。
          */
         get: operations["getSessionUser"];
         put?: never;
@@ -69,18 +69,63 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         UserDto: {
-            id?: string;
-            username?: string;
-            profile?: string;
-            email?: string;
+            /**
+             * @description ユーザー ID
+             * @example example
+             */
+            id: string;
+            /**
+             * @description ユーザー名
+             * @example 太郎
+             */
+            username: string;
+            /**
+             * @description プロフィール
+             * @example こんにちは。
+             */
+            profile: string;
+            /**
+             * @description メールアドレス
+             * @example example@example.com
+             */
+            email: string;
         };
-        Post: {
+        ProblemDetail: {
+            /** Format: uri */
+            type?: string;
+            title?: string;
             /** Format: int32 */
-            id?: number;
-            userId?: string;
-            content?: string;
-            /** Format: date-time */
-            createdAt?: string;
+            status?: number;
+            detail?: string;
+            /** Format: uri */
+            instance?: string;
+            properties?: {
+                [key: string]: Record<string, never>;
+            };
+        };
+        PostDto: {
+            /**
+             * Format: int32
+             * @description 投稿 ID
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description ユーザー ID
+             * @example example
+             */
+            userId: string;
+            /**
+             * @description 本文
+             * @example がんばります。
+             */
+            content: string;
+            /**
+             * Format: date-time
+             * @description 投稿日時
+             * @example 2025-03-10T08:14:12.451+00:00
+             */
+            createdAt: string;
         };
     };
     responses: never;
@@ -108,7 +153,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserDto"];
+                    "application/json": components["schemas"]["UserDto"];
+                };
+            };
+            /** @description ユーザーが見つからないとき */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -130,7 +184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Post"][];
+                    "application/json": components["schemas"]["PostDto"][];
                 };
             };
         };
@@ -150,7 +204,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserDto"];
+                    "application/json": components["schemas"]["UserDto"];
                 };
             };
         };
