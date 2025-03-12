@@ -9,9 +9,9 @@ import io.swagger.v3.oas.annotations.info.Info;
 
 @OpenAPIDefinition(
 	info = @Info(
-		title = "demo-application",
+		title = "Glitter API",
 		version = "0.0.1-SNAPSHOT",
-		description = "サンプルです。"
+		description = "Glitter の API 仕様書"
 	)
 )
 @SpringBootApplication

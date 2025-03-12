@@ -37,3 +37,6 @@ out/
 .vscode/
 
 .env
+
+/src/main/java/com/example/demo/generated/*
+!/src/main/java/com/example/demo/generated/README.md

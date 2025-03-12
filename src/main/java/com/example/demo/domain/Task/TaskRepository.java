@@ -1,4 +1,4 @@
-package com.example.demo.repository;
+package com.example.demo.domain.Task;
 
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.domain.Task;
-import com.example.demo.mapper.TaskDynamicSqlSupport;
-import com.example.demo.mapper.TaskMapper;
+import com.example.demo.generated.Task;
+import com.example.demo.generated.TaskDynamicSqlSupport;
+import com.example.demo.generated.TaskMapper;
 
 
 @Repository

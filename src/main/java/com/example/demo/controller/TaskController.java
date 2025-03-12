@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.domain.Task;
-import com.example.demo.repository.TaskRepository;
+import com.example.demo.domain.Task.TaskRepository;
+import com.example.demo.generated.Task;
 
 import io.swagger.v3.oas.annotations.Operation;
 
