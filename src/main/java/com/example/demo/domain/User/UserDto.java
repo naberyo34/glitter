@@ -7,13 +7,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * パスワードや認証情報を含まないユーザー情報です。
  */
 public class UserDto {
-  @Schema(description = "ユーザー ID", example = "example", required = true)
+  @Schema(description = "ユーザー ID", example = "example", requiredMode = Schema.RequiredMode.REQUIRED)
   private String id;
-  @Schema(description = "ユーザー名", example = "太郎", required = true)
+  @Schema(description = "ユーザー名", example = "太郎", requiredMode = Schema.RequiredMode.REQUIRED)
   private String username;
-  @Schema(description = "プロフィール", example = "こんにちは。", required = true)
+  @Schema(description = "プロフィール", example = "こんにちは。", requiredMode = Schema.RequiredMode.REQUIRED)
   private String profile;
-  @Schema(description = "メールアドレス", example = "example@example.com", required = true)
+  @Schema(description = "メールアドレス", example = "example@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
   private String email;
 
   public UserDto(String id, String username, String profile, String email) {

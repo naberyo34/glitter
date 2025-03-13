@@ -36,7 +36,16 @@ out/
 ### VS Code ###
 .vscode/
 
+### macOS ###
+
+.DS_Store
+
+### Credential ###
+
+certs
 .env
+
+### MyBatis Generator ###
 
 /src/main/java/com/example/demo/generated/*
 !/src/main/java/com/example/demo/generated/README.md

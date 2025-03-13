@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.example.demo.domain.Auth;
 
 import java.util.Arrays;
 import java.util.Collection;
