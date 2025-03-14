@@ -1,5 +1,8 @@
 package com.example.demo.domain.Auth;
 
+/**
+ * クライアントから受け取る認証情報の型定義
+ */
 public class UserIdentity {
   private String id;
   private String password;

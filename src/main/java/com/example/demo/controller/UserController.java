@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,12 +50,16 @@ public class UserController {
     return userService.getUserPosts(id);
   }
 
-  @Operation(summary = "セッションユーザーを取得", description = "セッションユーザーを取得します。見つからなかった場合でも、404 ではなく null を返します。", responses = {
+  @Operation(summary = "セッションユーザーを取得", description = "セッションユーザーを取得します。ログインしていない場合は 401 が返ります。通常発生しませんが、ログインしているにもかかわらずユーザーのデータが見つからない場合、404 ではなく null を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
       }),
+      @ApiResponse(responseCode = "401", description = "ログインしていないとき", content = {
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+      })
   })
   @GetMapping("/me")
+  @PreAuthorize("isAuthenticated()")
   public UserDto getSessionUser() throws ErrorResponseException {
     return userService.getSessionUser()
         .orElse(null);

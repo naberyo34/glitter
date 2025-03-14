@@ -2,11 +2,9 @@ package com.example.demo.domain.Auth;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -35,11 +33,8 @@ import com.nimbusds.jose.proc.SecurityContext;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-  private final RsaKeyProperties rsaKeys;
-
-  public SecurityConfig(RsaKeyProperties rsaKeys) {
-    this.rsaKeys = rsaKeys;
-  }
+  @Autowired
+  private RsaKeyProperties rsaKeys;
 
   @Bean
   PasswordEncoder passwordEncoder() {
@@ -79,7 +74,7 @@ public class SecurityConfig {
     http.cors((cors) -> cors.configurationSource(corsConfigurationSource()))
         // stateless であれば CSRF 対策は切っても良い
         .csrf((csrf) -> csrf.disable())
-        .authorizeHttpRequests((authorize) -> authorize.requestMatchers("/auth/token").permitAll().anyRequest().authenticated())
+        .authorizeHttpRequests((authorize) -> authorize.anyRequest().permitAll())
         .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
 
