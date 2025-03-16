@@ -1,4 +1,4 @@
-# domain/auth
+# config
 
 Spring Security の OAuth2 認証機能に関連するファイルを配置します。
 

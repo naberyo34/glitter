@@ -15,13 +15,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TokenService {
+public class JwtTokenService {
   @Autowired
   private AuthenticationProvider authenticationProvider;
   @Autowired
   private JwtEncoder encoder;
 
-  public String generateToken(UserIdentity identity) {
+  public JwtTokenDto generateToken(UserIdentity identity) {
     try {
       // 受け取ったユーザー情報を使って認証
       Authentication authentication = authenticationProvider
@@ -38,7 +38,8 @@ public class TokenService {
           .subject(authentication.getName())
           .claim("scope", scope)
           .build();
-      return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+      String token = this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+      return new JwtTokenDto(token);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
