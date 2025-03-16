@@ -5,10 +5,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -17,14 +19,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtTokenService {
   @Autowired
-  private AuthenticationProvider authenticationProvider;
-  @Autowired
   private JwtEncoder encoder;
+  @Autowired
+  private UserDetailsService userDetailsService;
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   public JwtTokenDto generateToken(UserIdentity identity) {
     try {
+      // provider を作る
+      DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+      provider.setUserDetailsService(userDetailsService);
+      provider.setPasswordEncoder(passwordEncoder);
+
       // 受け取ったユーザー情報を使って認証
-      Authentication authentication = authenticationProvider
+      Authentication authentication = provider
           .authenticate(new UsernamePasswordAuthenticationToken(identity.getId(), identity.getPassword()));
       // 認証情報からトークンを生成
       Instant now = Instant.now();
