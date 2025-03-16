@@ -1,4 +1,9 @@
 # Glitter-view
 
 Glitter のフロントエンドです。
-react-router-v7 で動作します。
+react-router-v7 によって動作します。
+
+## Getting Started
+
+- `npm ci`
+- `npm run dev`
