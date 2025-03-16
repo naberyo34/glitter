@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: glitter
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -8,8 +10,6 @@ spring:
     problemdetails:
       enabled: true
 mybatis:
-  type-aliases-package: com.example.db.model
-  type-handlers-package: com.example.typehandler
   configuration:
     map-underscore-to-camel-case: true
     default-fetch-size: 100

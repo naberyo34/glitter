@@ -44,6 +44,7 @@ public class UserService {
 
   /**
    * ユーザー ID に紐づく投稿を取得する
+   * 
    * @param userId
    * @return 投稿のリスト
    */
