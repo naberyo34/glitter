@@ -1,4 +1,4 @@
-package com.example.config;
+package com.example.demo.domain.Auth;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
