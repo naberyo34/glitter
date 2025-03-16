@@ -88,6 +88,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        JwtToken: {
+            /**
+             * @description トークン
+             * @example $2a$12$PTFZW06XLYYrjGXQkRv14.F.hO1GRy.79pvMauUV0Clc6cSsquuOu
+             */
+            token?: string;
+        };
+        ProblemDetail: {
+            /** Format: uri */
+            type?: string;
+            title?: string;
+            /** Format: int32 */
+            status?: number;
+            detail?: string;
+            /** Format: uri */
+            instance?: string;
+            properties?: {
+                [key: string]: Record<string, never>;
+            };
+        };
         UserIdentity: {
             id?: string;
             password?: string;
@@ -113,19 +133,6 @@ export interface components {
              * @example example@example.com
              */
             email: string;
-        };
-        ProblemDetail: {
-            /** Format: uri */
-            type?: string;
-            title?: string;
-            /** Format: int32 */
-            status?: number;
-            detail?: string;
-            /** Format: uri */
-            instance?: string;
-            properties?: {
-                [key: string]: Record<string, never>;
-            };
         };
         PostDto: {
             /**
@@ -179,7 +186,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/plain": unknown;
+                    "application/json": components["schemas"]["JwtToken"];
                 };
             };
             /** @description 認証に失敗した場合 */
@@ -188,7 +195,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": string;
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
                 };
             };
         };

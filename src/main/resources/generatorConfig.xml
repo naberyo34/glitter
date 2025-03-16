@@ -14,8 +14,5 @@
     <table schema="public" tableName="post">
       <generatedKey column="id" sqlStatement="JDBC" />
     </table>
-    <table schema="public" tableName="task">
-      <generatedKey column="id" sqlStatement="JDBC" />
-    </table>
   </context>
 </generatorConfiguration>

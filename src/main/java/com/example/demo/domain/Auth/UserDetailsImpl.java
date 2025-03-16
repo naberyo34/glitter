@@ -17,7 +17,8 @@ public class UserDetailsImpl implements UserDetails {
   public UserDetailsImpl(User user) {
     this.id = user.getId();
     this.password = user.getPassword();
-    this.authorities = Arrays.stream(user.getRole().split(",")).map((role) -> new SimpleGrantedAuthority(role)).toList();
+    // TODO: user 以外の権限が必要になったら再考
+    this.authorities = Arrays.asList(new SimpleGrantedAuthority("user"));
   }
 
   @Override
