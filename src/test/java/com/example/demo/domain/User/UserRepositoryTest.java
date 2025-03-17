@@ -2,6 +2,7 @@ package com.example.demo.domain.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Optional;
 
@@ -28,9 +29,9 @@ public class UserRepositoryTest {
   }
 
   @Test
-  void IDからユーザーを取得したときそのユーザーDTOが返る() throws Exception {
+  void IDからユーザーを取得したときそのユーザーが返る() throws Exception {
     Optional<User> user = userRepository.findById("test_user");
-    assertThat(user).isNotEmpty();
+    assertThat(user).isPresent().get().isInstanceOf(User.class);
 
     // 取得ユーザーが正しいことも確認しておく
     user.ifPresent((u) -> {
@@ -45,9 +46,9 @@ public class UserRepositoryTest {
   }
 
   @Test
-  void メールアドレスからユーザーを取得したときそのユーザーDTOが返る() throws Exception {
+  void メールアドレスからユーザーを取得したときそのユーザーが返る() throws Exception {
     Optional<User> user = userRepository.findByEmail("test@example.com");
-    assertThat(user).isNotEmpty();
+    assertThat(user).isPresent().get().isInstanceOf(User.class);
 
     // 取得ユーザーが正しいことも確認しておく
     user.ifPresent((u) -> {
@@ -57,9 +58,9 @@ public class UserRepositoryTest {
 
   @Test
   @WithMockUser(username = "test_user")
-  void ログイン中にセッションユーザーを取得したときそのユーザーDTOが返る() throws Exception {
+  void ログイン中にセッションユーザーを取得したときそのユーザーが返る() throws Exception {
     Optional<User> user = userRepository.getSessionUser();
-    assertThat(user).isNotEmpty();
+    assertThat(user).isPresent().get().isInstanceOf(User.class);
 
     // 取得ユーザーが正しいことも確認しておく
     user.ifPresent((u) -> {
@@ -99,9 +100,7 @@ public class UserRepositoryTest {
     try {
       User user2 = setNewUser("new_user", "unique@example.com");
       userRepository.insert(user2);
-      // 追加されたことを確認
-      Optional<User> newUser = userRepository.findById("new_user");
-      assertThat(newUser).isNotEmpty();
+      fail();
     } catch (Exception e) {
       assertThat(e).isInstanceOf(org.springframework.dao.DuplicateKeyException.class);
     }
@@ -120,6 +119,7 @@ public class UserRepositoryTest {
     try {
       User user2 = setNewUser("unique_user", "new@example.com");
       userRepository.insert(user2);
+      fail();
     } catch (Exception e) {
       assertThat(e).isInstanceOf(org.springframework.dao.DuplicateKeyException.class);
     }
@@ -139,6 +139,7 @@ public class UserRepositoryTest {
 
     try {
       userRepository.insert(user);
+      fail();
     } catch (Exception e) {
       assertThat(e).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
     }

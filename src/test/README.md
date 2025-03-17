@@ -18,4 +18,4 @@ Service のテストでは、Repository が返すデータはモックする必�
 
 ### Controller
 
-Controller のテストでは、
+Controller のテストでも、Service や Repository が返すデータはモックする必要があります。

@@ -23,6 +23,10 @@ public class UserDto {
     this.email = email;
   }
 
+  // Jackson 用にデフォルトコンストラクタを定義
+  public UserDto() {
+  }
+
   public String getId() {
     return id;
   }

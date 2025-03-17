@@ -2,6 +2,7 @@ package com.example.demo.domain.Auth;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class JwtTokenService {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
-  public JwtTokenDto generateToken(UserIdentity identity) {
+  public Optional<JwtTokenDto> generateToken(UserIdentity identity) {
     try {
       // provider を作る
       DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -48,9 +49,9 @@ public class JwtTokenService {
           .claim("scope", scope)
           .build();
       String token = this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-      return new JwtTokenDto(token);
+      return Optional.of(new JwtTokenDto(token));
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      return Optional.empty();
     }
   }
 }

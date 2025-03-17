@@ -4,6 +4,7 @@ values
   (
     'test_user',
     'テストユーザー',
+    -- 「test」をハッシュ化したもの
     '$2a$12$LWXJeqQzJBzqZWU8PpF31usZPPUxD1i8Mp0bQcov0ygENoLZ2oYlG',
     'test@example.com',
     'テスト用のアカウントです。'

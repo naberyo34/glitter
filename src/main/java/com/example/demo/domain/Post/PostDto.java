@@ -25,6 +25,10 @@ public class PostDto {
     this.createdAt = createdAt;
   }
 
+  // Jackson 用にデフォルトコンストラクタを定義
+  public PostDto() {
+  }
+
   public Long getId() {
     return id;
   }

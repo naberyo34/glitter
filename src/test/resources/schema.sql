@@ -1,7 +1,7 @@
 -- Postgres と同じような環境にするため必要
 create schema if not exists public;
 
-create table public."user" (
+create table if not exists public."user" (
   id text not null primary key,
   username text not null,
   password text not null,
@@ -9,7 +9,7 @@ create table public."user" (
   profile text
 );
 
-create table public.post (
+create table if not exists public.post (
   -- serial でないと h2 で動かないため注意
   id serial primary key,
   user_id text not null,

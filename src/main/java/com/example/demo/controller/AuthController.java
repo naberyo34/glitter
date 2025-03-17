@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +34,7 @@ public class AuthController {
   })
   @PostMapping("/token")
   public JwtTokenDto token(@RequestBody UserIdentity identity) {
-    return jwtTokenService.generateToken(identity);
+    return jwtTokenService.generateToken(identity)
+        .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
   }
 }
