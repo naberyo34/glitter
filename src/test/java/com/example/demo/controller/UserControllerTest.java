@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.text.ParseException;
@@ -16,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.example.demo.domain.Post.PostDto;
 import com.example.demo.domain.User.UserDto;
 import com.example.demo.domain.User.UserService;
+import com.example.demo.generated.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
@@ -32,6 +36,8 @@ public class UserControllerTest {
 
   @InjectMocks
   private UserController userController;
+
+  private ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
   public void setup() throws ParseException {
@@ -50,6 +56,14 @@ public class UserControllerTest {
 
     when(userService.getSessionUser())
         .thenReturn(Optional.of(new UserDto("session_user", "セッションユーザー", "プロフィール", "session@example.com")));
+    when(userService.add(any(User.class))).thenAnswer(invocation -> {
+      User user = invocation.getArgument(0);
+      if (user.getId() != null && user.getPassword() != null && user.getUsername() != null && user.getEmail() != null) {
+        return Optional.of(new UserDto("new_user", "新しいユーザー", "プロフィール", "new@example.com"));
+      } else {
+        return Optional.empty();
+      }
+    });
   }
 
   @Test
@@ -64,7 +78,6 @@ public class UserControllerTest {
 
   @Test
   void 投稿しているユーザーの投稿を取得したとき投稿のリストが返る() throws Exception {
-    ObjectMapper objectMapper = new ObjectMapper();
     mockMvc.perform(get("/user/user_with_post/post")).andExpect(status().isOk()).andExpect((result) -> {
       String content = result.getResponse().getContentAsString();
       List<PostDto> posts = Arrays.asList(objectMapper.readValue(content, PostDto[].class));
@@ -90,5 +103,37 @@ public class UserControllerTest {
   @Test
   void セッションユーザーを取得したときユーザーのDTOが返る() throws Exception {
     mockMvc.perform(get("/user/me")).andExpect(status().isOk());
+  }
+
+  @Test
+  void 正しいパラメーターでユーザーを作成できる() throws Exception {
+    User newUser = new User();
+    newUser.setId("new_user");
+    newUser.setPassword("password");
+    newUser.setUsername("新しいユーザー");
+    newUser.setEmail("new@example.com");
+    newUser.setProfile("プロフィール");
+    
+    mockMvc.perform(
+        post("/user").content(objectMapper.writeValueAsString(newUser))
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk()).andExpect((result) -> {
+          String content = result.getResponse().getContentAsString();
+          assertEquals(content, "{\"id\":\"new_user\",\"username\":\"新しいユーザー\",\"profile\":\"プロフィール\",\"email\":\"new@example.com\"}");
+        });
+  }
+
+  @Test
+  void 無効なパラメーターでユーザーを作成したとき400が返る() throws Exception {
+    User invalidNewUser = new User();
+    invalidNewUser.setId("new_user");
+    invalidNewUser.setPassword("password");
+    invalidNewUser.setUsername("新しいユーザー");
+    // email がない
+
+    mockMvc.perform(
+        post("/user").content(objectMapper.writeValueAsString(invalidNewUser))
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+        .andExpect(status().isBadRequest());
   }
 }

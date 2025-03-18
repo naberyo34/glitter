@@ -33,7 +33,7 @@ public class AuthController {
       })
   })
   @PostMapping("/token")
-  public JwtTokenDto token(@RequestBody UserIdentity identity) {
+  public JwtTokenDto token(@RequestBody UserIdentity identity) throws ErrorResponseException {
     return jwtTokenService.generateToken(identity)
         .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
   }

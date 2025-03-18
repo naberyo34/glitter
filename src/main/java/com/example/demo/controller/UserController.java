@@ -9,12 +9,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Post.PostDto;
 import com.example.demo.domain.User.UserDto;
 import com.example.demo.domain.User.UserService;
+import com.example.demo.generated.User;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -68,5 +71,19 @@ public class UserController {
   public UserDto getSessionUser() throws ErrorResponseException {
     return userService.getSessionUser()
         .orElse(null);
+  }
+
+  @Operation(summary = "ユーザーを追加", description = "ユーザーを追加します。無効な値を渡した場合は400が返ります。", responses = {
+      @ApiResponse(responseCode = "200", description = "OK", content = {
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
+      }),
+      @ApiResponse(responseCode = "400", description = "無効な値を渡したとき", content = {
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+      })
+  })
+  @PostMapping("")
+  public UserDto add(@RequestBody User user) throws ErrorResponseException {
+    return userService.add(user)
+        .orElseThrow(() -> new ErrorResponseException(HttpStatus.BAD_REQUEST));
   }
 }
