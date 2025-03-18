@@ -4,6 +4,46 @@
  */
 
 export interface paths {
+    "/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * ユーザーを追加
+         * @description ユーザーを追加します。
+         */
+        post: operations["add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 投稿の追加
+         * @description セッションユーザーの新規投稿を追加します。
+         */
+        post: operations["addPost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/token": {
         parameters: {
             query?: never;
@@ -53,7 +93,7 @@ export interface paths {
         };
         /**
          * ユーザーの投稿を取得
-         * @description ユーザーの投稿を取得します。見つからなかった場合でも、404 ではなく空配列を返します。
+         * @description ユーザーの投稿を取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。
          */
         get: operations["getUserPosts"];
         put?: never;
@@ -88,30 +128,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        JwtToken: {
-            /**
-             * @description トークン
-             * @example $2a$12$PTFZW06XLYYrjGXQkRv14.F.hO1GRy.79pvMauUV0Clc6cSsquuOu
-             */
-            token?: string;
-        };
-        ProblemDetail: {
-            /** Format: uri */
-            type?: string;
-            title?: string;
-            /** Format: int32 */
-            status?: number;
-            detail?: string;
-            /** Format: uri */
-            instance?: string;
-            properties?: {
-                [key: string]: Record<string, never>;
-            };
-        };
-        UserIdentity: {
-            id?: string;
-            password?: string;
-        };
         UserDto: {
             /**
              * @description ユーザー ID
@@ -134,9 +150,29 @@ export interface components {
              */
             email: string;
         };
+        ProblemDetail: {
+            /** Format: uri */
+            type?: string;
+            title?: string;
+            /** Format: int32 */
+            status?: number;
+            detail?: string;
+            /** Format: uri */
+            instance?: string;
+            properties?: {
+                [key: string]: Record<string, never>;
+            };
+        };
+        User: {
+            id?: string;
+            username?: string;
+            password?: string;
+            email?: string;
+            profile?: string;
+        };
         PostDto: {
             /**
-             * Format: int32
+             * Format: int64
              * @description 投稿 ID
              * @example 1
              */
@@ -158,6 +194,17 @@ export interface components {
              */
             createdAt: string;
         };
+        JwtTokenDto: {
+            /**
+             * @description JWT トークン
+             * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+             */
+            token: string;
+        };
+        UserIdentity: {
+            id?: string;
+            password?: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -167,6 +214,99 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["User"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDto"];
+                };
+            };
+            /** @description 無効な値を渡したとき */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description ユーザーやメールアドレスが重複しているとき */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description サーバーエラーが発生したとき */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    addPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostDto"];
+                };
+            };
+            /** @description 認証に失敗したかセッションユーザーを取得できなかった場合 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description 何らかの理由で投稿に失敗した場合 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     token: {
         parameters: {
             query?: never;
@@ -186,7 +326,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["JwtToken"];
+                    "application/json": components["schemas"]["JwtTokenDto"];
                 };
             };
             /** @description 認証に失敗した場合 */
@@ -249,6 +389,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PostDto"][];
+                };
+            };
+            /** @description ユーザーが見つからないとき */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
