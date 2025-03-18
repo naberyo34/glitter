@@ -80,7 +80,7 @@ public class UserController {
         .orElse(null);
   }
 
-  @Operation(summary = "ユーザーを追加", description = "ユーザーを追加します。無効な値を渡した場合は400が返ります。", responses = {
+  @Operation(summary = "ユーザーを追加", description = "ユーザーを追加します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
       }),
