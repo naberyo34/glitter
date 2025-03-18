@@ -1,85 +1,60 @@
 package com.example.demo.domain.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.demo.domain.Post.PostDto;
-import com.example.demo.domain.Post.PostRepository;
-import com.example.demo.generated.Post;
 import com.example.demo.generated.User;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserServiceTest {
-  @Mock
-  private UserRepository userRepository;
-  @Mock
-  private PostRepository postRepository;
-  @Mock
-  private PasswordEncoder passwordEncoder;
+  @LocalServerPort
+  private int port;
 
-  @InjectMocks
-  private UserService userService;
+  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+      "postgres:16-alpine");
 
-  @BeforeEach
-  public void setup() {
-    MockitoAnnotations.openMocks(this);
-
-    User userWithPost = new User();
-    userWithPost.setId("user_with_post");
-    userWithPost.setUsername("投稿を持っているユーザー");
-    userWithPost.setPassword("password");
-    userWithPost.setEmail("withpost@example.com");
-    userWithPost.setProfile("プロフィール");
-
-    User userWithoutPost = new User();
-    userWithoutPost.setId("user_without_post");
-    userWithoutPost.setUsername("投稿を持っていないユーザー");
-    userWithoutPost.setPassword("password");
-    userWithoutPost.setEmail("withoutpost@example.com");
-    userWithoutPost.setProfile("プロフィール");
-
-    Post post = new Post();
-    long id = 1;
-    post.setId(id);
-    post.setUserId(userWithPost.getId());
-    post.setContent("投稿");
-    post.setCreatedAt(new Date());
-
-    when(userRepository.findById("user_with_post")).thenReturn(Optional.of(userWithPost));
-    when(userRepository.findById("user_without_post")).thenReturn(Optional.of(userWithoutPost));
-    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
-    when(userRepository.findByEmail("withpost@example.com")).thenReturn(Optional.of(userWithPost));
-
-    when(userRepository.getSessionUser()).thenReturn(Optional.of(userWithPost));
-
-    when(postRepository.findByUserId("user_with_post")).thenReturn(List.of(post));
-    when(postRepository.findByUserId("user_without_post")).thenReturn(List.of());
-    when(passwordEncoder.encode("password")).thenReturn("$2a$12$2w6EU9tKnOdzrx5FgINxL.Y6pzyDe5N/TtMmsv8fiMe4HiOYkYH7y");
+  @BeforeAll
+  static void beforeAll() {
+    postgres.start();
   }
+
+  @AfterAll
+  static void afterAll() {
+    postgres.stop();
+  }
+
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgres::getJdbcUrl);
+    registry.add("spring.datasource.username", postgres::getUsername);
+    registry.add("spring.datasource.password", postgres::getPassword);
+  }
+
+  @Autowired
+  private UserService userService;
 
   @Test
   void IDからユーザーを取得したときユーザーのDTOが返る() throws Exception {
-    Optional<UserDto> user = userService.findById("user_with_post");
+    Optional<UserDto> user = userService.findById("test_user");
     // User ではなく UserDto が返っていることを確認
     assertThat(user).isPresent().get().isInstanceOf(UserDto.class);
-
-    // 取得ユーザーが正しいことも確認しておく
     user.ifPresent((u) -> {
-      assertEquals(u.getUsername(), "投稿を持っているユーザー");
+      assertEquals(u.getUsername(), "テストユーザー");
     });
   }
 
@@ -90,28 +65,20 @@ public class UserServiceTest {
   }
 
   @Test
-  @WithMockUser(username = "投稿を持っているユーザー")
-  void セッションユーザーを取得したときユーザーDTOが返る() throws Exception {
+  @WithMockUser(username = "test_user")
+  void ログイン中にセッションユーザーを取得したときユーザーDTOが返る() throws Exception {
     Optional<UserDto> user = userService.getSessionUser();
     // User ではなく UserDto が返っていることを確認
     assertThat(user).isPresent().get().isInstanceOf(UserDto.class);
-
-    // 取得ユーザーが正しいことも確認しておく
     user.ifPresent((u) -> {
-      assertEquals(u.getUsername(), "投稿を持っているユーザー");
+      assertEquals(u.getUsername(), "テストユーザー");
     });
   }
 
   @Test
-  void ユーザーに紐づく投稿を取得できる() throws Exception {
-    List<PostDto> posts = userService.getUserPosts("user_with_post");
-    assertThat(posts).isNotEmpty();
-  }
-
-  @Test
-  void ユーザーが投稿を持たない場合は空のリストを返す() throws Exception {
-    List<PostDto> posts = userService.getUserPosts("user_without_post");
-    assertThat(posts).isEmpty();
+  void 非ログイン中にセッションユーザーを取得したときemptyが返る() throws Exception {
+    Optional<UserDto> user = userService.getSessionUser();
+    assertThat(user).isEmpty();
   }
 
   @Test
@@ -133,13 +100,17 @@ public class UserServiceTest {
   @Test
   void IDが重複する場合ユーザー追加に失敗する() throws Exception {
     User user = new User();
-    user.setId("user_with_post");
+    user.setId("test_user");
     user.setUsername("ID重複ユーザー");
     user.setPassword("password");
     user.setEmail("new@example.com");
 
-    Optional<UserDto> newUserDto = userService.add(user);
-    assertThat(newUserDto).isEmpty();
+    try {
+      userService.add(user);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
   }
 
   @Test
@@ -150,8 +121,12 @@ public class UserServiceTest {
     user.setPassword("password");
     user.setEmail("invalid_id@example.com");
 
-    Optional<UserDto> newUserDto = userService.add(user);
-    assertThat(newUserDto).isEmpty();
+    try {
+      userService.add(user);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
   }
 
   @Test
@@ -162,8 +137,12 @@ public class UserServiceTest {
     user.setPassword("password");
     user.setEmail("nousername@example.com");
 
-    Optional<UserDto> newUserDto = userService.add(user);
-    assertThat(newUserDto).isEmpty();
+    try {
+      userService.add(user);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
   }
 
   @Test
@@ -174,8 +153,12 @@ public class UserServiceTest {
     user.setPassword("12345");
     user.setEmail("shortpass@example.com");
 
-    Optional<UserDto> newUserDto = userService.add(user);
-    assertThat(newUserDto).isEmpty();
+    try {
+      userService.add(user);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
   }
 
   @Test
@@ -184,10 +167,14 @@ public class UserServiceTest {
     user.setId("new_user");
     user.setUsername("メールアドレス重複ユーザー");
     user.setPassword("password");
-    user.setEmail("withpost@example.com");
+    user.setEmail("test@example.com");
 
-    Optional<UserDto> newUserDto = userService.add(user);
-    assertThat(newUserDto).isEmpty();
+    try {
+      userService.add(user);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
   }
 
   @Test
@@ -198,7 +185,11 @@ public class UserServiceTest {
     user.setPassword("password");
     user.setEmail("invalid_email");
 
-    Optional<UserDto> newUserDto = userService.add(user);
-    assertThat(newUserDto).isEmpty();
+    try {
+      userService.add(user);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
   }
 }

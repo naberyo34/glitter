@@ -1,8 +1,11 @@
 package com.example.demo.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Post.PostDto;
+import com.example.demo.domain.Post.PostService;
 import com.example.demo.domain.User.UserDto;
+import com.example.demo.domain.User.UserInvalidException;
 import com.example.demo.domain.User.UserService;
 import com.example.demo.generated.User;
 
@@ -30,6 +35,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 public class UserController {
   @Autowired
   private UserService userService;
+  @Autowired
+  private PostService postService;
 
   @Operation(summary = "IDからユーザーを取得", description = "IDからユーザーを取得します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -55,7 +62,7 @@ public class UserController {
   public List<PostDto> getUserPosts(@PathVariable String id) throws ErrorResponseException {
     // ユーザーの存在判定
     userService.findById(id).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
-    return userService.getUserPosts(id);
+    return postService.getPostsByUserId(id);
   }
 
   @Operation(summary = "セッションユーザーを取得", description = "セッションユーザーを取得します。ログインしていない場合は 401 が返ります。通常発生しませんが、ログインしているにもかかわらずユーザーのデータが見つからない場合、404 ではなく null を返します。", responses = {
@@ -79,11 +86,26 @@ public class UserController {
       }),
       @ApiResponse(responseCode = "400", description = "無効な値を渡したとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+      }),
+      @ApiResponse(responseCode = "409", description = "ユーザーやメールアドレスが重複しているとき", content = {
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+      }),
+      @ApiResponse(responseCode = "500", description = "サーバーエラーが発生したとき", content = {
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       })
   })
   @PostMapping("")
-  public UserDto add(@RequestBody User user) throws ErrorResponseException {
-    return userService.add(user)
-        .orElseThrow(() -> new ErrorResponseException(HttpStatus.BAD_REQUEST));
+  public Optional<UserDto> add(@RequestBody User user) throws ErrorResponseException {
+    try {
+      return userService.add(user);
+    } catch (DuplicateKeyException e) {
+      throw new ErrorResponseException(HttpStatus.CONFLICT);
+    } catch (DataIntegrityViolationException e) {
+      throw new ErrorResponseException(HttpStatus.BAD_REQUEST);
+    } catch (UserInvalidException e) {
+      throw new ErrorResponseException(HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

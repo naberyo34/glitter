@@ -48,7 +48,8 @@ public class UserRepository {
    * @param user
    */
   @Transactional
-  public void insert(User user) {
+  public User insert(User user) {
     userMapper.insert(user);
+    return user;
   }
 }

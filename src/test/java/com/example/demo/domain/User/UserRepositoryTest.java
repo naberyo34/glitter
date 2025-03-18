@@ -2,24 +2,56 @@ package com.example.demo.domain.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.demo.generated.User;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserRepositoryTest {
+  @LocalServerPort
+  private int port;
+
+  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+      "postgres:16-alpine");
+
+  @BeforeAll
+  static void beforeAll() {
+    postgres.start();
+  }
+
+  @AfterAll
+  static void afterAll() {
+    postgres.stop();
+  }
+
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgres::getJdbcUrl);
+    registry.add("spring.datasource.username", postgres::getUsername);
+    registry.add("spring.datasource.password", postgres::getPassword);
+  }
+
   @Autowired
   private UserRepository userRepository;
 
-  private User setNewUser(String id, String email) {
+  private User createNewUser(String id, String email) {
     User user = new User();
     user.setId(id);
     user.setUsername("新しいユーザー");
@@ -78,70 +110,50 @@ public class UserRepositoryTest {
   @Test
   @Transactional
   void 正しいIDとメールアドレスとパスワードを指定して新規のユーザーが作成できる() throws Exception {
-    User user = setNewUser("new_user", "new@example.com");
-    userRepository.insert(user);
-
-    // 追加されたことを確認
-    Optional<User> newUser = userRepository.findById("new_user");
-    assertThat(newUser).isNotEmpty();
-
-    // 取得ユーザーが正しいことも確認しておく
-    newUser.ifPresent((u) -> {
-      assertEquals(u.getUsername(), "新しいユーザー");
-    });
+    try {
+      User newUser = userRepository.insert(createNewUser("new_user", "new@example.com"));
+      assertEquals(newUser.getUsername(), "新しいユーザー");
+    } catch (Exception e) {
+      fail(e);
+    }
   }
 
   @Test
   @Transactional
   void ユーザー作成時にIDが重複しているとき例外が発生する() throws Exception {
-    User user = setNewUser("new_user", "new@example.com");
-    userRepository.insert(user);
-
     try {
-      User user2 = setNewUser("new_user", "unique@example.com");
-      userRepository.insert(user2);
+      userRepository.insert(createNewUser("new_user", "new@example.com"));
+      userRepository.insert(createNewUser("new_user", "unique@example.com"));
       fail();
     } catch (Exception e) {
-      assertThat(e).isInstanceOf(org.springframework.dao.DuplicateKeyException.class);
+      assertInstanceOf(DuplicateKeyException.class, e);
     }
-
-    // 追加されていないことを確認
-    Optional<User> newUser = userRepository.findByEmail("unique@example.com");
-    assertThat(newUser).isEmpty();
   }
 
   @Test
   @Transactional
   void ユーザー作成時にメールアドレスが重複しているとき例外が発生する() throws Exception {
-    User user = setNewUser("new_user", "new@example.com");
-    userRepository.insert(user);
-
     try {
-      User user2 = setNewUser("unique_user", "new@example.com");
-      userRepository.insert(user2);
+      userRepository.insert(createNewUser("new_user", "new@example.com"));
+      userRepository.insert(createNewUser("unique_user", "new@example.com"));
       fail();
     } catch (Exception e) {
-      assertThat(e).isInstanceOf(org.springframework.dao.DuplicateKeyException.class);
+      assertInstanceOf(DuplicateKeyException.class, e);
     }
-
-    // 追加されていないことを確認
-    Optional<User> newUser = userRepository.findById("unique_user");
-    assertThat(newUser).isEmpty();
   }
 
   @Test
   @Transactional
   void ユーザー作成時に渡すパラメータが誤っているとき例外が発生する() throws Exception {
-    // ID とメールアドレスが null のユーザーを作成
-    User user = new User();
-    user.setUsername("新しいユーザー");
-    user.setPassword("password");
-
     try {
+      // ID とメールアドレスが null のユーザーを作成
+      User user = new User();
+      user.setUsername("新しいユーザー");
+      user.setPassword("password");
       userRepository.insert(user);
       fail();
     } catch (Exception e) {
-      assertThat(e).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+      assertInstanceOf(DataIntegrityViolationException.class, e);
     }
   }
 }

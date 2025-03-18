@@ -2,20 +2,57 @@
 
 テストを記述します。
 
-## テスト作成のルール
+## テストの書き方
 
-### Repository
+### 単体テスト
 
-Repository のテスト **のみ** 、データベースとの疎通を含むテストを行います。
+- 単体テストでは、データベースとの疎通を行わなず、依存するコンポーネントはモックすることでテスト対象の挙動を確認します。
 
-テスト時は h2 によるテスト用のデータベースが起動されます。
-テスト用データベースの初期化は `resources/schema.sql` と `resources/data.sql` によってテスト実行のたびに行われます。
+```java
+@ExtendWith(MockitoExtension.class)
+public class HogeServiceTest {
+  @Mock
+  private HogeRepository hogeRepository;
 
-### Service
+  @InjectMocks
+  private HogeService hogeService;
 
-Service のテストでは、Repository が返すデータはモックする必要があります。
-データベースとの疎通は行わず、ビジネスロジックが正しいことを検証します。
+  @Test
+  // ...
+}
+```
 
-### Controller
+### 結合テスト
 
-Controller のテストでも、Service や Repository が返すデータはモックする必要があります。
+- 結合テストでは、`testcontainers` を用いてテスト用のデータベースと疎通し、依存するコンポーネントも原則モックせずにテスト対象の挙動を確認します。
+
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class FugaServiceTest {
+  @LocalServerPort
+  private int port;
+
+  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+      "postgres:16-alpine");
+
+  @BeforeAll
+  static void beforeAll() {
+    postgres.start();
+  }
+
+  @AfterAll
+  static void afterAll() {
+    postgres.stop();
+  }
+
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgres::getJdbcUrl);
+    registry.add("spring.datasource.username", postgres::getUsername);
+    registry.add("spring.datasource.password", postgres::getPassword);
+  }
+
+  @Test
+  // ...
+}
+```

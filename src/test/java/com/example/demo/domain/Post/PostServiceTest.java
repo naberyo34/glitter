@@ -1,11 +1,11 @@
 package com.example.demo.domain.Post;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,18 +15,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.demo.generated.Post;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PostRepositoryTest {
+public class PostServiceTest {
   @LocalServerPort
   private int port;
 
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-    "postgres:16-alpine"
-  );
+      "postgres:16-alpine");
 
   @BeforeAll
   static void beforeAll() {
@@ -46,58 +44,42 @@ public class PostRepositoryTest {
   }
 
   @Autowired
-  private PostRepository postRepository;
+  private PostService postService;
 
   @Test
-  void IDに紐づく投稿を取得したときその投稿が返る() throws Exception {
-    assertThat(postRepository.findById(1L)).isNotNull();
-  }
-
-  @Test
-  void 存在しないIDの投稿を取得したときemptyが返る() throws Exception {
-    assertThat(postRepository.findById(100L)).isEmpty();
-  }
-
-  @Test
-  void ユーザーIDに紐づく投稿を取得したときその投稿のリストが返る() throws Exception {
-    List<Post> posts = postRepository.findByUserId("test_user");
+  void ユーザーに紐づく投稿を取得できる() throws Exception {
+    List<PostDto> posts = postService.getPostsByUserId("test_user");
     assertThat(posts).isNotEmpty();
   }
 
   @Test
-  void ユーザーIDに紐づく投稿が存在しないとき空のリストが返る() throws Exception {
-    List<Post> posts = postRepository.findByUserId("test_user_2");
+  void ユーザーの投稿がない場合空のリストが返る() throws Exception {
+    List<PostDto> posts = postService.getPostsByUserId("test_user_2");
     assertThat(posts).isEmpty();
   }
 
   @Test
   void 存在しないユーザーの投稿を取得したとき空のリストが返る() throws Exception {
-    List<Post> posts = postRepository.findByUserId("not_exist_user");
+    List<PostDto> posts = postService.getPostsByUserId("not_exist_user");
     assertThat(posts).isEmpty();
   }
 
   @Test
-  void 正しいユーザーで投稿できる() throws Exception {
-    Post post = new Post();
-    post.setUserId("test_user");
-    post.setContent("test content");
-    post.setCreatedAt(new Date());
+  @Transactional
+  void 投稿を追加できる() throws Exception {
     try {
-      Post p = postRepository.insert(post);
-      assertNotNull(p);
+      Optional<PostDto> newPost = postService.addPost(new PostParams("test_user", "new post"));
+      assertThat(newPost.get()).isNotNull();
     } catch (Exception e) {
-      fail();
+      fail(e);
     }
   }
 
   @Test
-  void 存在しないユーザーで投稿に失敗する() throws Exception {
-    Post post = new Post();
-    post.setUserId("not_exist_user");
-    post.setContent("test content");
-    post.setCreatedAt(new Date());
+  @Transactional
+  void 不正なユーザーの投稿が失敗する() throws Exception {
     try {
-      postRepository.insert(post);
+      postService.addPost(new PostParams("invalid_user", "new post"));
       fail();
     } catch (Exception e) {
       assertNotNull(e);

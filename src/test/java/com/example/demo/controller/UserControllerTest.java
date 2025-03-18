@@ -1,74 +1,66 @@
 package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.demo.domain.Post.PostDto;
-import com.example.demo.domain.User.UserDto;
-import com.example.demo.domain.User.UserService;
 import com.example.demo.generated.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 public class UserControllerTest {
-  private MockMvc mockMvc;
-  @Mock
-  private UserService userService;
+  @LocalServerPort
+  private int port;
 
-  @InjectMocks
-  private UserController userController;
+  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+      "postgres:16-alpine");
+
+  @BeforeAll
+  static void beforeAll() {
+    postgres.start();
+  }
+
+  @AfterAll
+  static void afterAll() {
+    postgres.stop();
+  }
+
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgres::getJdbcUrl);
+    registry.add("spring.datasource.username", postgres::getUsername);
+    registry.add("spring.datasource.password", postgres::getPassword);
+  }
+
+  @Autowired
+  private MockMvc mockMvc;
 
   private ObjectMapper objectMapper = new ObjectMapper();
 
-  @BeforeEach
-  public void setup() throws ParseException {
-    mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
-
-    when(userService.findById("user_with_post"))
-        .thenReturn(Optional.of(new UserDto("user_with_post", "投稿を持っているユーザー", "プロフィール", "withpost@example.com")));
-    when(userService.findById("user_without_post")).thenReturn(
-        Optional.of(new UserDto("user_without_post", "投稿を持っていないユーザー", "プロフィール", "withoutpost@example.com")));
-    when(userService.findById("not_exist_user")).thenReturn(Optional.empty());
-
-    long postId = 1;
-    when(userService.getUserPosts("user_with_post"))
-        .thenReturn(List.of(new PostDto(postId, "user_with_post", "投稿", new Date())));
-    when(userService.getUserPosts("user_without_post")).thenReturn(List.of());
-
-    when(userService.getSessionUser())
-        .thenReturn(Optional.of(new UserDto("session_user", "セッションユーザー", "プロフィール", "session@example.com")));
-    when(userService.add(any(User.class))).thenAnswer(invocation -> {
-      User user = invocation.getArgument(0);
-      if (user.getId() != null && user.getPassword() != null && user.getUsername() != null && user.getEmail() != null) {
-        return Optional.of(new UserDto("new_user", "新しいユーザー", "プロフィール", "new@example.com"));
-      } else {
-        return Optional.empty();
-      }
-    });
-  }
-
   @Test
   void IDからユーザーを取得したときユーザーのDTOが返る() throws Exception {
-    mockMvc.perform(get("/user/user_with_post")).andExpect(status().isOk());
+    mockMvc.perform(get("/user/test_user")).andExpect(status().isOk());
   }
 
   @Test
@@ -78,18 +70,18 @@ public class UserControllerTest {
 
   @Test
   void 投稿しているユーザーの投稿を取得したとき投稿のリストが返る() throws Exception {
-    mockMvc.perform(get("/user/user_with_post/post")).andExpect(status().isOk()).andExpect((result) -> {
+    mockMvc.perform(get("/user/test_user/post")).andExpect(status().isOk()).andExpect((result) -> {
       String content = result.getResponse().getContentAsString();
       List<PostDto> posts = Arrays.asList(objectMapper.readValue(content, PostDto[].class));
       PostDto post = posts.get(0);
-      // いちおう投稿内容を検証
-      assertEquals(post.getContent(), "投稿");
+      // 投稿日降順のため、「テスト投稿2」が期待される
+      assertEquals(post.getContent(), "テスト投稿2");
     });
   }
 
   @Test
   void 投稿していないユーザーの投稿を取得したとき空のリストが返る() throws Exception {
-    mockMvc.perform(get("/user/user_without_post/post")).andExpect(status().isOk()).andExpect((result) -> {
+    mockMvc.perform(get("/user/test_user_2/post")).andExpect(status().isOk()).andExpect((result) -> {
       String content = result.getResponse().getContentAsString();
       assertEquals(content, "[]");
     });
@@ -101,39 +93,77 @@ public class UserControllerTest {
   }
 
   @Test
-  void セッションユーザーを取得したときユーザーのDTOが返る() throws Exception {
+  @WithMockUser(username = "test_user")
+  void ログイン中にセッションユーザーを取得したときユーザーのDTOが返る() throws Exception {
     mockMvc.perform(get("/user/me")).andExpect(status().isOk());
   }
 
+  void 非ログイン中にセッションユーザーを取得したとき401が返る() throws Exception {
+    mockMvc.perform(get("/user/me")).andExpect(status().isUnauthorized());
+  }
+
   @Test
+  @Transactional
   void 正しいパラメーターでユーザーを作成できる() throws Exception {
-    User newUser = new User();
-    newUser.setId("new_user");
-    newUser.setPassword("password");
-    newUser.setUsername("新しいユーザー");
-    newUser.setEmail("new@example.com");
-    newUser.setProfile("プロフィール");
-    
+    User user = new User();
+    user.setId("new_user");
+    user.setPassword("password");
+    user.setUsername("新しいユーザー");
+    user.setEmail("new@example.com");
+
     mockMvc.perform(
-        post("/user").content(objectMapper.writeValueAsString(newUser))
+        post("/user").content(objectMapper.writeValueAsString(user))
             .contentType(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk()).andExpect((result) -> {
           String content = result.getResponse().getContentAsString();
-          assertEquals(content, "{\"id\":\"new_user\",\"username\":\"新しいユーザー\",\"profile\":\"プロフィール\",\"email\":\"new@example.com\"}");
+          User newUser = objectMapper.readValue(content, User.class);
+          assertEquals(newUser.getUsername(), "新しいユーザー");
         });
   }
 
   @Test
-  void 無効なパラメーターでユーザーを作成したとき400が返る() throws Exception {
-    User invalidNewUser = new User();
-    invalidNewUser.setId("new_user");
-    invalidNewUser.setPassword("password");
-    invalidNewUser.setUsername("新しいユーザー");
-    // email がない
+  @Transactional
+  void 無効なパラメーターでユーザーを作成しようとしたとき400が返る() throws Exception {
+    User invalidUser = new User();
+    invalidUser.setId("new_user");
+    invalidUser.setPassword("password");
+    invalidUser.setUsername("新しいユーザー");
+    // メールアドレスが無効
+    invalidUser.setEmail("invalid_email");
 
     mockMvc.perform(
-        post("/user").content(objectMapper.writeValueAsString(invalidNewUser))
+        post("/user").content(objectMapper.writeValueAsString(invalidUser))
             .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @Transactional
+  void 存在するIDでユーザーを作成しようとしたとき409が返る() throws Exception {
+    User user = new User();
+    user.setId("test_user");
+    user.setPassword("password");
+    user.setUsername("新しいユーザー");
+    user.setEmail("new@example.com");
+
+    mockMvc.perform(
+        post("/user").content(objectMapper.writeValueAsString(user))
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  @Transactional
+  void 存在するメールアドレスでユーザーを作成しようとしたとき409が返る() throws Exception {
+    User user = new User();
+    user.setId("new_user");
+    user.setPassword("password");
+    user.setUsername("新しいユーザー");
+    user.setEmail("test@example.com");
+
+    mockMvc.perform(
+        post("/user").content(objectMapper.writeValueAsString(user))
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+        .andExpect(status().isConflict());
   }
 }

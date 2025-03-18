@@ -3,6 +3,7 @@ package com.example.demo.domain.Post;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,17 @@ public class PostRepository {
   private PostMapper postMapper;
 
   /**
+   * ID から投稿を取得する
+   * 
+   * @param id
+   * @return 合致する投稿 (存在しない場合は null)
+   */
+  @Transactional
+  public Optional<Post> findById(Long id) {
+    return postMapper.selectOne(c -> c.where(PostDynamicSqlSupport.id, isEqualTo(id)));
+  }
+
+  /**
    * ユーザーIDに紐づく投稿を取得する
    * 
    * @param userId
@@ -27,5 +39,15 @@ public class PostRepository {
   public List<Post> findByUserId(String userId) {
     return postMapper.select((c) -> c.where(PostDynamicSqlSupport.userId, isEqualTo(userId))
         .orderBy(PostDynamicSqlSupport.createdAt.descending()));
+  }
+
+  /**
+   * 投稿を追加する
+   * @return 追加した投稿
+   */
+  @Transactional
+  public Post insert(Post post) {
+    postMapper.insert(post);
+    return post;
   }
 }

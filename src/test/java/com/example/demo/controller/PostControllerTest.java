@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,17 +12,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.demo.domain.Auth.UserIdentity;
+import com.example.demo.domain.Post.PostDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class AuthControllerTest {
+public class PostControllerTest {
   @LocalServerPort
   private int port;
 
@@ -49,22 +51,28 @@ public class AuthControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
+  private ObjectMapper objectMapper = new ObjectMapper();
+
   @Test
-  void 正しいユーザー情報を渡すとトークンを生成できる() throws Exception {
-    UserIdentity validUser = new UserIdentity("test_user", "password");
-    ObjectMapper objectMapper = new ObjectMapper();
-    mockMvc.perform(post("/auth/token").content(objectMapper.writeValueAsString(validUser))
-        .contentType(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk()).andExpect((result) -> {
-          String token = result.getResponse().getContentAsString();
-          assertNotNull(token);
+  @WithMockUser(username = "test_user")
+  @Transactional
+  void ログイン状態で投稿を追加できる() throws Exception {
+    mockMvc.perform(post("/post")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content("new post"))
+        .andExpect(status().isOk()).andExpect(result -> {
+          String content = result.getResponse().getContentAsString();
+          PostDto post = objectMapper.readValue(content, PostDto.class);
+          assertEquals(post.getContent(), "new post");
         });
   }
 
   @Test
-  void 不正なユーザー情報を渡すと401が返る() throws Exception {
-    UserIdentity invalidUser = new UserIdentity("invalid_user", "password");
-    ObjectMapper objectMapper = new ObjectMapper();
-    mockMvc.perform(post("/auth/token").content(objectMapper.writeValueAsString(invalidUser))
-        .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)).andExpect(status().isUnauthorized());
+  @Transactional
+  void 非ログイン状態の投稿で401が返る() throws Exception {
+    mockMvc.perform(post("/post")
+        .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)
+        .content("new post"))
+        .andExpect(status().isUnauthorized());
   }
 }
