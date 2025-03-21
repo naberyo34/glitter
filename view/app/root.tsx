@@ -9,6 +9,9 @@ import {
 
 import type { Route } from './+types/root';
 import './app.css';
+import { authMiddleware } from './middlewares/auth.server';
+
+export const unstable_middleware = [authMiddleware];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
