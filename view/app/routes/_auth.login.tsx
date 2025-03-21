@@ -6,6 +6,8 @@ import {
   redirect,
   useActionData,
 } from 'react-router';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 import { authCookie } from '~/middlewares/auth.server';
 import { userContext } from '~/middlewares/userContext';
 
@@ -45,24 +47,14 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Login() {
-  const error = useActionData<typeof action>();
-
   return (
     <div>
+      <h1>Login</h1>
       <Form method="post">
-        <label>
-          ID
-          <input type="text" name="id" />
-        </label>
-        <label>
-          Password
-          <input type="password" name="password" />
-        </label>
-        <button type="submit">Login</button>
+        <Input type="text" name="id" />
+        <Input type="password" name="password" />
+        <Button type="submit">Login</Button>
       </Form>
-      <p>
-        {error?.status}: {error?.title}
-      </p>
     </div>
   );
 }
