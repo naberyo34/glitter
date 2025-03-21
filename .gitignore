@@ -47,8 +47,8 @@ certs
 
 ### MyBatis Generator ###
 
-/src/main/java/com/example/demo/generated/*
-!/src/main/java/com/example/demo/generated/README.md
+/src/main/java/com/example/glitter/generated/*
+!/src/main/java/com/example/glitter/generated/README.md
 
 ### MyBatis Migration ###
 
