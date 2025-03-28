@@ -7,10 +7,14 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import com.example.glitter.generated.Post;
 
+import jakarta.validation.Valid;
+
 @Service
+@Validated
 public class PostService {
   @Autowired
   PostRepository postRepository;
@@ -23,7 +27,7 @@ public class PostService {
    */
   public List<PostDto> getPostsByUserId(String userId) {
     Stream<Post> posts = postRepository.findByUserId(userId).stream();
-    return posts.map(p -> new PostDto(p.getId(), p.getUserId(), p.getContent(), p.getCreatedAt())).toList();
+    return posts.map(p -> PostDto.fromEntity(p)).toList();
   }
 
   /**
@@ -32,16 +36,16 @@ public class PostService {
    * 
    * @param post
    */
-  public Optional<PostDto> addPost(PostParams postParams) throws Exception {
+  public Optional<PostDto> add(@Valid PostParamsDto postParamsDto) throws Exception {
     Post post = new Post();
-    post.setUserId(postParams.getUserId());
-    post.setContent(postParams.getContent());
+    post.setUserId(postParamsDto.getUserId());
+    post.setContent(postParamsDto.getContent());
     // 現在時刻を設定
     post.setCreatedAt(new Date());
 
     try {
-      Post p = postRepository.insert(post);
-      return Optional.of(new PostDto(p.getId(), p.getUserId(), p.getContent(), p.getCreatedAt()));
+      Post result = postRepository.insert(post);
+      return Optional.of(PostDto.fromEntity(result));
     } catch (Exception e) {
       throw e;
     }

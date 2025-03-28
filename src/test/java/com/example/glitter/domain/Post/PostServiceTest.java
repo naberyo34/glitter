@@ -18,10 +18,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.Post.PostDto;
-import com.example.glitter.domain.Post.PostParams;
-import com.example.glitter.domain.Post.PostService;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PostServiceTest {
   @LocalServerPort
@@ -72,7 +68,7 @@ public class PostServiceTest {
   @Transactional
   void 投稿を追加できる() throws Exception {
     try {
-      Optional<PostDto> newPost = postService.addPost(new PostParams("test_user", "new post"));
+      Optional<PostDto> newPost = postService.add(new PostParamsDto("test_user", "new post"));
       assertThat(newPost.get()).isNotNull();
     } catch (Exception e) {
       fail(e);
@@ -81,9 +77,20 @@ public class PostServiceTest {
 
   @Test
   @Transactional
+  void 空文字のみの投稿に失敗する() throws Exception {
+    try {
+      postService.add(new PostParamsDto("test_user", " "));
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
+  }
+
+  @Test
+  @Transactional
   void 不正なユーザーの投稿が失敗する() throws Exception {
     try {
-      postService.addPost(new PostParams("invalid_user", "new post"));
+      postService.add(new PostParamsDto("invalid_user", "new post"));
       fail();
     } catch (Exception e) {
       assertNotNull(e);

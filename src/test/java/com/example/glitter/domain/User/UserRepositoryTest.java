@@ -21,7 +21,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.User;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -155,6 +154,21 @@ public class UserRepositoryTest {
       fail();
     } catch (Exception e) {
       assertInstanceOf(DataIntegrityViolationException.class, e);
+    }
+  }
+
+  @Test
+  @Transactional
+  void ユーザーを更新できる() throws Exception {
+    try {
+      User user = userRepository.findById("test_user").orElseThrow();
+      user.setUsername("更新されたユーザー");
+      userRepository.update(user);
+
+      User updatedUser = userRepository.findById("test_user").orElseThrow();
+      assertEquals(updatedUser.getUsername(), "更新されたユーザー");
+    } catch (Exception e) {
+      fail(e);
     }
   }
 }

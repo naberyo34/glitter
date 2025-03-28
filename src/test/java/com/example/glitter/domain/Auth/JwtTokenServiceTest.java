@@ -14,10 +14,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.Auth.JwtTokenDto;
-import com.example.glitter.domain.Auth.JwtTokenService;
-import com.example.glitter.domain.Auth.UserIdentity;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JwtTokenServiceTest {
   @LocalServerPort

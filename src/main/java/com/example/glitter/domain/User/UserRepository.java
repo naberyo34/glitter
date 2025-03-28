@@ -36,6 +36,7 @@ public class UserRepository {
 
   /**
    * セッションユーザーを取得する
+   * 
    * @return セッションユーザー (存在しない場合は null)
    */
   @Transactional
@@ -45,11 +46,23 @@ public class UserRepository {
 
   /**
    * ユーザーを追加する
+   * 
    * @param user
    */
   @Transactional
   public User insert(User user) {
     userMapper.insert(user);
+    return user;
+  }
+
+  /**
+   * ユーザーを更新する
+   * 
+   * @param user
+   */
+  @Transactional
+  public User update(User user) {
+    userMapper.updateByPrimaryKey(user);
     return user;
   }
 }

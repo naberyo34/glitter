@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.glitter.domain.Post.PostDto;
-import com.example.glitter.domain.Post.PostParams;
+import com.example.glitter.domain.Post.PostParamsDto;
 import com.example.glitter.domain.Post.PostService;
-import com.example.glitter.domain.User.UserDto;
+import com.example.glitter.domain.User.UserSummaryDto;
 import com.example.glitter.domain.User.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,10 +44,10 @@ public class PostController {
   @PreAuthorize("isAuthenticated()")
   public PostDto addPost(@RequestBody String content) throws ErrorResponseException {
     try {
-      UserDto sessionUser = userService.getSessionUser()
+      UserSummaryDto sessionUser = userService.getSessionUser()
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
-      PostParams postParams = new PostParams(sessionUser.getId(), content);
-      return postService.addPost(postParams)
+      PostParamsDto postParamsDto = new PostParamsDto(sessionUser.getId(), content);
+      return postService.add(postParamsDto)
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR));
     } catch (Exception e) {
       throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR);

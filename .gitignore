@@ -55,3 +55,6 @@ certs
 migrations/drivers/*
 migrations/environments/*
 !migrations/environments/development.sample.properties
+
+### Image ###
+/src/main/resources/static/images

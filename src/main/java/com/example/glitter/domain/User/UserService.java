@@ -2,14 +2,17 @@ package com.example.glitter.domain.User;
 
 import java.util.Optional;
 
-import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import com.example.glitter.generated.User;
 
+import jakarta.validation.Valid;
+
 @Service
+@Validated
 public class UserService {
   @Autowired
   private UserRepository userRepository;
@@ -17,25 +20,25 @@ public class UserService {
   private PasswordEncoder passwordEncoder;
 
   /**
-   * ID からユーザー DTO を取得する
+   * ID からユーザー Summary を取得する
    * 
    * @param userId
-   * @return 合致するユーザー DTO (存在しない場合は null)
+   * @return 合致するユーザー Summary (存在しない場合は null)
    */
-  public Optional<UserDto> findById(String userId) {
+  public Optional<UserSummaryDto> findById(String userId) {
     Optional<User> user = userRepository.findById(userId);
-    return user.map(u -> new UserDto(u.getId(), u.getUsername(), u.getProfile(), u.getEmail()));
+    return user.map(UserSummaryDto::fromEntity);
   }
 
   /**
-   * セッションユーザー DTO を取得する
+   * セッションユーザー Summary を取得する
    * 
-   * @return セッションユーザー DTO (存在しない場合は null)
+   * @return セッションユーザー Summary (存在しない場合は null)
    */
-  public Optional<UserDto> getSessionUser() {
+  public Optional<UserSummaryDto> getSessionUser() {
     try {
       Optional<User> user = userRepository.getSessionUser();
-      return user.map(u -> new UserDto(u.getId(), u.getUsername(), u.getProfile(), u.getEmail()));
+      return user.map(UserSummaryDto::fromEntity);
     } catch (NullPointerException e) {
       // セッションユーザーが存在しない場合ぬるぽが出る、想定済みとして空の Optional を返す
       return Optional.empty();
@@ -47,42 +50,63 @@ public class UserService {
 
   /**
    * ユーザーを追加する
-   * 追加に成功した場合、追加したユーザー DTO を返す
+   * 追加に成功した場合、追加したユーザー Summary を返す
    * 
-   * @param user
-   * @return 追加したユーザー DTO (追加に失敗した場合は null)
+   * @param userDto
+   * @return 追加したユーザー Summary (追加に失敗した場合は null)
    */
-  public Optional<UserDto> add(User user) throws Exception {
+  public UserSummaryDto add(@Valid UserDto userDto) throws Exception {
     try {
-      // バリデーション
-      // id が半角英数字+ハイフン+アンダースコアでない場合は失敗
-      if (!user.getId().matches("^[a-zA-Z0-9_-]+$")) {
-        throw new UserInvalidException("ID is invalid.");
-      }
-      // ユーザー名が空白の場合は失敗
-      if (user.getUsername().isBlank()) {
-        throw new UserInvalidException("Username is empty.");
-      }
-      // email が正規表現に合致しない場合は失敗
-      EmailValidator emailValidator = new EmailValidator();
-      if (!emailValidator.isValid(user.getEmail(), null)) {
-        throw new UserInvalidException("Email is invalid.");
-      }
-      // パスワードが 6文字以上でない場合は失敗
-      if (user.getPassword().length() < 6) {
-        throw new UserInvalidException("Password is too short.");
-      }
-      // パスワードが半角英数字+記号でない場合は失敗
-      if (!user.getPassword().matches("^[a-zA-Z0-9!-/:-@\\[-`{-~]+$")) {
-        throw new UserInvalidException("Password is invalid.");
-      }
-
-      // パスワードをハッシュ化して保存する
+      User user = userDto.toEntity();
+      // パスワードはハッシュ化して保存する
       user.setPassword(passwordEncoder.encode(user.getPassword()));
-      userRepository.insert(user);
+      User result = userRepository.insert(user);
+      return UserSummaryDto.fromEntity(result);
     } catch (Exception e) {
       throw e;
     }
-    return Optional.of(new UserDto(user.getId(), user.getUsername(), user.getProfile(), user.getEmail()));
+  }
+
+  /**
+   * ユーザーを更新する
+   * 更新に成功した場合、更新したユーザー Summary を返す
+   * 
+   * @param userDto
+   * @return 更新したユーザー Summary (更新に失敗した場合は null)
+   */
+  public UserSummaryDto update(@Valid UserDto userDto) throws Exception {
+    try {
+      User user = userDto.toEntity();
+      // userRepository.updateByPrimaryKey は更新対象のユーザーが存在しない場合新規にユーザーを作ってしまう
+      // 更新対象のユーザーが存在しない場合は例外を投げておく
+      userRepository.findById(user.getId()).orElseThrow();
+      User result = userRepository.update(user);
+      return UserSummaryDto.fromEntity(result);
+    } catch (Exception e) {
+      throw e;
+    }
+  }
+
+  /**
+   * ユーザー Summary からユーザーを更新する
+   * 更新に成功した場合、更新したユーザー Summary を返す
+   * 
+   * @param userSummaryDto
+   * @return
+   * @throws Exception
+   */
+  public UserSummaryDto updateFromSummary(@Valid UserSummaryDto userSummaryDto) throws Exception {
+    try {
+      // UserSummaryDto には パスワードが含まれないため、一度 User を取得する
+      User user = userRepository.findById(userSummaryDto.getId()).orElseThrow();
+      user.setUsername(userSummaryDto.getUsername());
+      user.setProfile(userSummaryDto.getProfile());
+      user.setEmail(userSummaryDto.getEmail());
+      user.setIcon(userSummaryDto.getIcon());
+      User result = userRepository.update(user);
+      return UserSummaryDto.fromEntity(result);
+    } catch (Exception e) {
+      throw e;
+    }
   }
 }

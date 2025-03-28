@@ -16,6 +16,9 @@ export async function loader({
 export default function Index() {
   const { user } = useLoaderData<typeof loader>();
   return (
-    <div className="flex flex-col gap-4">{user ? user.username : 'Guest'}</div>
+    <section>
+      <h1>タイムライン</h1>
+      <p>{user ? `こんにちは、${user.username}さん` : 'こんにちは、ゲストさん'}</p>
+    </section>
   );
 }

@@ -48,13 +48,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Login() {
   return (
-    <div>
+    <section>
       <h1>Login</h1>
-      <Form method="post">
+      <Form method="post" className="flex flex-col gap-2">
+        <label htmlFor="id">ID</label>
         <Input type="text" name="id" />
+        <label htmlFor="password">Password</label>
         <Input type="password" name="password" />
         <Button type="submit">Login</Button>
       </Form>
-    </div>
+    </section>
   );
 }

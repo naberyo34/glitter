@@ -6,7 +6,8 @@ create table if not exists public."user" (
   username text not null,
   password text not null,
   email text not null unique,
-  profile text
+  profile text,
+  icon text
 );
 
 create table if not exists public.post (
