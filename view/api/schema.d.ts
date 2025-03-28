@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/user/me/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * アイコン画像の更新
+         * @description アイコン画像を更新します。ログインが必須です。成功時はアイコン画像のパス情報を含む UserSummary を返します。
+         */
+        post: operations["updateIcon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/post": {
         parameters: {
             query?: never;
@@ -128,7 +148,7 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        UserDto: {
+        UserSummaryDto: {
             /**
              * @description ユーザー ID
              * @example example
@@ -140,15 +160,20 @@ export interface components {
              */
             username: string;
             /**
-             * @description プロフィール
-             * @example こんにちは。
-             */
-            profile: string;
-            /**
              * @description メールアドレス
              * @example example@example.com
              */
             email: string;
+            /**
+             * @description プロフィール
+             * @example こんにちは。
+             */
+            profile?: string;
+            /**
+             * @description プロフィールアイコン
+             * @example /test_user/example.jpg
+             */
+            icon?: string;
         };
         ProblemDetail: {
             /** Format: uri */
@@ -163,12 +188,37 @@ export interface components {
                 [key: string]: Record<string, never>;
             };
         };
-        User: {
-            id?: string;
-            username?: string;
-            password?: string;
-            email?: string;
+        UserDto: {
+            /**
+             * @description ユーザー ID
+             * @example example
+             */
+            id: string;
+            /**
+             * @description ユーザー名
+             * @example 太郎
+             */
+            username: string;
+            /**
+             * @description パスワード
+             * @example $2a$12$Z3MQA08C1d8S89U7nA0/1eMMxRw061BKTZHl.OlGzZjFMLQs6FC3y
+             */
+            password: string;
+            /**
+             * @description メールアドレス
+             * @example example@example.com
+             */
+            email: string;
+            /**
+             * @description プロフィール
+             * @example こんにちは。
+             */
             profile?: string;
+            /**
+             * @description プロフィールアイコン
+             * @example /test_user/example.jpg
+             */
+            icon?: string;
         };
         PostDto: {
             /**
@@ -223,7 +273,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["User"];
+                "application/json": components["schemas"]["UserDto"];
             };
         };
         responses: {
@@ -233,7 +283,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserDto"];
+                    "application/json": components["schemas"]["UserSummaryDto"];
                 };
             };
             /** @description 無効な値を渡したとき */
@@ -255,6 +305,51 @@ export interface operations {
                 };
             };
             /** @description サーバーエラーが発生したとき */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    updateIcon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSummaryDto"];
+                };
+            };
+            /** @description ログインしていないとき */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description 画像のアップロードに失敗したとき */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -357,7 +452,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserDto"];
+                    "application/json": components["schemas"]["UserSummaryDto"];
                 };
             };
             /** @description ユーザーが見つからないとき */
@@ -417,7 +512,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserDto"];
+                    "application/json": components["schemas"]["UserSummaryDto"];
                 };
             };
             /** @description ログインしていないとき */
