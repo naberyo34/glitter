@@ -1,30 +1,19 @@
 package com.example.glitter.domain.Auth;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * クライアントから受け取る認証情報の型定義
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserIdentity {
+  @Schema(description = "ユーザー ID", example = "example", requiredMode = Schema.RequiredMode.REQUIRED)
   private String id;
+  @Schema(description = "パスワード", example = "$2a$12$Z3MQA08C1d8S89U7nA0/1eMMxRw061BKTZHl.OlGzZjFMLQs6FC3y", requiredMode = Schema.RequiredMode.REQUIRED)
   private String password;
-
-  public UserIdentity(String id, String password) {
-    this.id = id;
-    this.password = password;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
 }

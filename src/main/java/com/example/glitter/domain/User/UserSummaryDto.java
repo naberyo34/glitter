@@ -1,13 +1,9 @@
 package com.example.glitter.domain.User;
 
-import org.hibernate.validator.constraints.URL;
-
 import com.example.glitter.generated.User;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
