@@ -48,19 +48,19 @@ public class PostServiceTest {
 
   @Test
   void ユーザーに紐づく投稿を取得できる() throws Exception {
-    List<PostDto> posts = postService.getPostsByUserId("test_user");
+    List<PostResponseDto> posts = postService.getPostsByUserId("test_user");
     assertThat(posts).isNotEmpty();
   }
 
   @Test
   void ユーザーの投稿がない場合空のリストが返る() throws Exception {
-    List<PostDto> posts = postService.getPostsByUserId("test_user_2");
+    List<PostResponseDto> posts = postService.getPostsByUserId("test_user_2");
     assertThat(posts).isEmpty();
   }
 
   @Test
   void 存在しないユーザーの投稿を取得したとき空のリストが返る() throws Exception {
-    List<PostDto> posts = postService.getPostsByUserId("not_exist_user");
+    List<PostResponseDto> posts = postService.getPostsByUserId("not_exist_user");
     assertThat(posts).isEmpty();
   }
 

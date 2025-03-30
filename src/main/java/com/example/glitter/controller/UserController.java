@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.glitter.domain.Post.PostDto;
+import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.Post.PostService;
 import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.domain.User.UserIconService;
@@ -60,13 +60,13 @@ public class UserController {
 
   @Operation(summary = "ユーザーの投稿を取得", description = "ユーザーの投稿を取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostDto.class))),
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))),
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからないとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       }) })
   @GetMapping("/{id}/post")
-  public List<PostDto> getUserPosts(@PathVariable String id) throws ErrorResponseException {
+  public List<PostResponseDto> getUserPosts(@PathVariable String id) throws ErrorResponseException {
     // ユーザーの存在判定
     userService.findById(id).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
     return postService.getPostsByUserId(id);

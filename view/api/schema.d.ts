@@ -244,6 +244,13 @@ export interface components {
              */
             createdAt: string;
         };
+        PostRequestDto: {
+            /**
+             * @description 本文
+             * @example がんばります。
+             */
+            content: string;
+        };
         JwtTokenDto: {
             /**
              * @description JWT トークン
@@ -252,8 +259,37 @@ export interface components {
             token: string;
         };
         UserIdentity: {
-            id?: string;
-            password?: string;
+            /**
+             * @description ユーザー ID
+             * @example example
+             */
+            id: string;
+            /**
+             * @description パスワード
+             * @example $2a$12$Z3MQA08C1d8S89U7nA0/1eMMxRw061BKTZHl.OlGzZjFMLQs6FC3y
+             */
+            password: string;
+        };
+        PostResponseDto: {
+            /**
+             * Format: int64
+             * @description 投稿 ID
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description 本文
+             * @example がんばります。
+             */
+            content: string;
+            /**
+             * Format: date-time
+             * @description 投稿日時
+             * @example 2025-03-10T08:14:12.451+00:00
+             */
+            createdAt: string;
+            /** @description ユーザー情報 */
+            user: components["schemas"]["UserSummaryDto"];
         };
     };
     responses: never;
@@ -369,7 +405,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": string;
+                "application/json": components["schemas"]["PostRequestDto"];
             };
         };
         responses: {
@@ -483,7 +519,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PostDto"][];
+                    "application/json": components["schemas"]["PostResponseDto"][];
                 };
             };
             /** @description ユーザーが見つからないとき */

@@ -24,7 +24,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <main className="flex flex-col items-center p-4">
-          <div className="size-100">{children}</div>
+          <div className="size-160">{children}</div>
         </main>
         <ScrollRestoration />
         <Scripts />

@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostDto;
+import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.User.UserSummaryDto;
 import com.example.glitter.generated.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,8 +81,8 @@ public class UserControllerTest {
   void 投稿しているユーザーの投稿を取得したとき投稿のリストが返る() throws Exception {
     mockMvc.perform(get("/user/test_user/post")).andExpect(status().isOk()).andExpect((result) -> {
       String content = result.getResponse().getContentAsString();
-      List<PostDto> posts = Arrays.asList(objectMapper.readValue(content, PostDto[].class));
-      PostDto post = posts.get(0);
+      List<PostResponseDto> posts = Arrays.asList(objectMapper.readValue(content, PostResponseDto[].class));
+      PostResponseDto post = posts.get(0);
       // 投稿日降順のため、「テスト投稿2」が期待される
       assertEquals(post.getContent(), "テスト投稿2");
     });

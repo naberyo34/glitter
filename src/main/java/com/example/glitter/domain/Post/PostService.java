@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Post;
+import com.example.glitter.generated.User;
 
 import jakarta.validation.Valid;
 
@@ -18,6 +20,8 @@ import jakarta.validation.Valid;
 public class PostService {
   @Autowired
   PostRepository postRepository;
+  @Autowired
+  UserRepository userRepository;
 
   /**
    * ユーザー ID に紐づく投稿を取得する
@@ -25,9 +29,12 @@ public class PostService {
    * @param userId
    * @return 投稿のリスト
    */
-  public List<PostDto> getPostsByUserId(String userId) {
+  public List<PostResponseDto> getPostsByUserId(String userId) {
     Stream<Post> posts = postRepository.findByUserId(userId).stream();
-    return posts.map(p -> PostDto.fromEntity(p)).toList();
+    return posts.map(p -> {
+      User user = userRepository.findById(p.getUserId()).orElseThrow();
+      return PostResponseDto.fromEntity(p, user);
+    }).toList();
   }
 
   /**

@@ -4,7 +4,7 @@ export type User = {
   id: string;
   username: string;
   email: string;
-  profile: string;
+  profile?: string;
 }
 
 export const userContext = unstable_createContext<User | null>(null);
