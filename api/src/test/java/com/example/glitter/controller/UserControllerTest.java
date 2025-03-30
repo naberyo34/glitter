@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.User.UserSummaryDto;
 import com.example.glitter.generated.User;
