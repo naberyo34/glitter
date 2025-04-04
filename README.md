@@ -1,22 +1,26 @@
 # Glitter
 
-## Getting Started (WIP)
+## Getting Started
 
-- 以下、開発マシン上で PostgreSQL が起動されている前提です。（改良予定）
-
-- `.env` を作成し以下を記入します。
-
-```
-DB_URL=
-DB_USERNAME=
-DB_PASSWORD=
-CLIENT_URL=
-```
-
+- `docker compose up --build -d` でデータベースとストレージのコンテナを立ち上げます。
+- `.env.example` を参考に `.env` を作成します。
 - `/migrations` ディレクトリの README を参考に MyBatis Migrations を導入、実行します。
-- `./gradlew build`
-- `./gradlew mbgenerator`
+- `gradle mbgenerator` でエンティティ、マッパーファイルを生成します。
+- `/src/main/resources/certs` 以下で下記を実行します。[参考](https://www.danvega.dev/blog/spring-security-jwt)
+
+```sh
+# create rsa key pair
+openssl genrsa -out keypair.pem 2048
+
+# extract public key
+openssl rsa -in keypair.pem -pubout -out public.pem
+
+# create private key in PKCS#8 format
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in keypair.pem -out private.pem
+```
+
+- `gradle build` でビルドとテストが通ることを確認します。
 
 ### 起動
 
-- `./gradlew bootRun`
+- `gradle bootRun`
