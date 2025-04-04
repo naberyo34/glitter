@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostDto;
-import com.example.glitter.domain.Post.PostRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -58,24 +57,22 @@ public class PostControllerTest {
   @WithMockUser(username = "test_user")
   @Transactional
   void ログイン状態で投稿を追加できる() throws Exception {
-    PostRequestDto post = new PostRequestDto("new post");
     mockMvc.perform(post("/post")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(post)))
+        .content("new post"))
         .andExpect(status().isOk()).andExpect(result -> {
           String content = result.getResponse().getContentAsString();
-          PostDto resultPostDto = objectMapper.readValue(content, PostDto.class);
-          assertEquals(resultPostDto.getContent(), "new post");
+          PostDto post = objectMapper.readValue(content, PostDto.class);
+          assertEquals(post.getContent(), "new post");
         });
   }
 
   @Test
   @Transactional
   void 非ログイン状態の投稿で401が返る() throws Exception {
-    PostRequestDto post = new PostRequestDto("new post");
     mockMvc.perform(post("/post")
         .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(post)))
+        .content("new post"))
         .andExpect(status().isUnauthorized());
   }
 }

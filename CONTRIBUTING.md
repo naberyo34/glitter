@@ -1,2 +1,0 @@
-# Glitter Development Guide
-
