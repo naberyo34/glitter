@@ -7,3 +7,4 @@
 
 /api/api-docs.yaml
 .env.*
+!.env.example
