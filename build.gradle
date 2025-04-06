@@ -51,6 +51,7 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 	implementation 'org.mybatis.dynamic-sql:mybatis-dynamic-sql:1.5.2'
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+  implementation 'software.amazon.awssdk:s3:2.31.15'
   implementation 'org.imgscalr:imgscalr-lib:4.2'
 }
 

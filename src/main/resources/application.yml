@@ -24,3 +24,7 @@ rsa:
   public-key: classpath:certs/public.pem
 env:
   client-url: ${CLIENT_URL}
+  storage-url: ${STORAGE_URL}
+  storage-bucket-name: ${STORAGE_BUCKET_NAME}
+  storage-username: ${STORAGE_USERNAME}
+  storage-password: ${STORAGE_PASSWORD}

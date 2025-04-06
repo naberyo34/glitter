@@ -3,6 +3,7 @@ package com.example.glitter.domain.Auth;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -33,6 +34,9 @@ import com.nimbusds.jose.proc.SecurityContext;
 public class SecurityConfig {
   @Autowired
   private RsaKeyProperties rsaKeys;
+
+  @Value("${env.client-url}")
+  private String clientUrl;
 
   @Bean
   PasswordEncoder passwordEncoder() {
@@ -81,7 +85,7 @@ public class SecurityConfig {
     CorsConfiguration corsConfiguration = new CorsConfiguration();
     corsConfiguration.addAllowedHeader(CorsConfiguration.ALL);
     corsConfiguration.addAllowedMethod(CorsConfiguration.ALL);
-    corsConfiguration.setAllowedOrigins(Arrays.asList("${env.client-url}"));
+    corsConfiguration.setAllowedOrigins(Arrays.asList(clientUrl));
     UrlBasedCorsConfigurationSource corsSource = new UrlBasedCorsConfigurationSource();
     corsSource.registerCorsConfiguration("/**", corsConfiguration);
     return corsSource;

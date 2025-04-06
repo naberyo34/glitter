@@ -1,27 +1,40 @@
 package com.example.glitter.domain.Image;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
 import org.imgscalr.Scalr;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.glitter.domain.User.UserSummaryDto;
 
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 @Service
 public class ImageService {
-  // TODO: 画像の保存先はとりあえずローカル
-  private Path PATH = Path.of(System.getProperty("user.dir"), "src/main/resources/static/images/");
-  private long MAX_FILE_SIZE = 2 * 1024 * 1024; // 4MB
-  private int MAX_WIDTH = 800;
-  private int MAX_HEIGHT = 800;
+  @Autowired
+  private S3Client s3Client;
+
+  @Value("${env.storage-url}")
+  private String url;
+
+  @Value("${env.storage-bucket-name}")
+  private String bucketName;
+
+  private long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+  private int ICON_WIDTH = 400;
 
   /**
    * ファイルの基本的なバリデーション
@@ -39,23 +52,21 @@ public class ImageService {
     }
   }
 
-  /**
-   * 画像が指定サイズを超えている場合、リサイズしてから保存する
-   * 
-   * @param inputStream
-   * @param outputPath
-   * @throws Exception
-   */
-  private void resizeAndSave(InputStream inputStream, Path outputPath) throws Exception {
+/**
+ * 画像をアイコン向けにリサイズ
+ * @param inputStream
+ * @return InputStream
+ * @throws Exception
+ */
+private InputStream resizeToIconSize(InputStream inputStream) throws Exception {
     try {
-      BufferedImage originalImage = ImageIO.read((inputStream));
-      if (originalImage.getWidth() > MAX_WIDTH) {
-        originalImage = Scalr.resize(originalImage, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH, MAX_WIDTH);
+      BufferedImage image = ImageIO.read((inputStream));
+      if (image.getWidth() > ICON_WIDTH) {
+        image = Scalr.resize(image, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH, ICON_WIDTH);
       }
-      if (originalImage.getHeight() > MAX_HEIGHT) {
-        originalImage = Scalr.resize(originalImage, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_HEIGHT, MAX_HEIGHT);
-      }
-      ImageIO.write(originalImage, "jpg", outputPath.toFile());
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      ImageIO.write(image, "jpg", outputStream);
+      return new ByteArrayInputStream(outputStream.toByteArray());
     } catch (Exception e) {
       throw e;
     }
@@ -64,29 +75,31 @@ public class ImageService {
   /**
    * 画像をアップロードする
    * アップロードはユーザー情報が必須です。
-   * 成功時は保存先のパスを返します。
+   * 成功時はファイル名を返します。
    * 
    * @param file
    * @param user
-   * @return
+   * @return ファイル名
    * @throws Exception
    */
   public Optional<String> upload(MultipartFile file, UserSummaryDto user) throws Exception {
     try {
-      String originalFileName = file.getOriginalFilename();
-      if (originalFileName == null) {
-        throw new Exception("file name is null");
-      }
+      // 検証
       validation(file);
-      // /static/images/{username}/{fileName} に保存
-      Path destination = PATH.resolve(user.getId());
+
+      // リサイズ
+      InputStream resizedImage = resizeToIconSize(file.getInputStream());
+
+      // S3 にアップロード
       String fileName = UUID.randomUUID().toString() + ".jpg";
-      Path outputPath = destination.resolve(fileName);
+      PutObjectRequest request = PutObjectRequest.builder()
+          .bucket(bucketName)
+          .key(fileName)
+          .contentType(file.getContentType())
+          .build();
+      s3Client.putObject(request, RequestBody.fromInputStream(resizedImage, resizedImage.available()));
 
-      Files.createDirectories(destination);
-      resizeAndSave(file.getInputStream(), outputPath);
-
-      return Optional.of(outputPath.toString());
+      return Optional.of(fileName);
     } catch (Exception e) {
       throw e;
     }
@@ -95,10 +108,13 @@ public class ImageService {
   /**
    * 画像を削除する
    */
-  public void delete(String path) throws Exception {
+  public void delete(String fileName) throws Exception {
     try {
-      Path target = PATH.resolve(path);
-      Files.deleteIfExists(target);
+      DeleteObjectRequest request = DeleteObjectRequest.builder()
+          .bucket(bucketName)
+          .key(fileName)
+          .build();
+      s3Client.deleteObject(request);
     } catch (Exception e) {
       throw e;
     }

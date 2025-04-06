@@ -6,8 +6,10 @@ import {
   type unstable_RouterContextProvider,
   useLoaderData,
 } from 'react-router';
+import { joinURL } from 'ufo';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
+import { url } from '~/lib/url.server';
 import { authCookie } from '~/middlewares/auth.server';
 import { userContext } from '~/middlewares/userContext';
 
@@ -25,10 +27,10 @@ export async function loader({
       },
     });
 
-    return { user, posts: data };
+    return { user: user, posts: data, storageUrl: url.storage };
   }
 
-  return { user };
+  return { user: user, storageUrl: url.storage };
 }
 
 export async function action({
@@ -55,13 +57,13 @@ export async function action({
 }
 
 export default function Index() {
-  const { user, posts } = useLoaderData<typeof loader>();
+  const { user, posts, storageUrl } = useLoaderData<typeof loader>();
   return (
     <section>
       <ul className="flex flex-col gap-4">
         {posts?.map((post) => (
           <li key={post.id} className="flex gap-2">
-            <img src={post.user.icon} alt="" width="40" height="40" />
+            {post.user.icon && (<img src={joinURL(storageUrl, 'glitter', post.user.icon)} alt="" width="40" height="40" className="w-[40px] h-[40px] object-cover" />)}
             <div>
               <div className="flex gap-2">
                 <p>{post.user.username}</p>

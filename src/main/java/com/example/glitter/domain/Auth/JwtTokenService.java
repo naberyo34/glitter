@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtTokenService {
   @Autowired
-  private JwtEncoder encoder;
+  private JwtEncoder jwtEncoder;
   @Autowired
   private UserDetailsService userDetailsService;
   @Autowired
@@ -48,7 +48,7 @@ public class JwtTokenService {
           .subject(authentication.getName())
           .claim("scope", scope)
           .build();
-      String token = this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+      String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
       return Optional.of(new JwtTokenDto(token));
     } catch (Exception e) {
       return Optional.empty();
