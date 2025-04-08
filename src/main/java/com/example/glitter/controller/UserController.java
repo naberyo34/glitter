@@ -2,7 +2,6 @@ package com.example.glitter.controller;
 
 import java.util.List;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -130,12 +129,10 @@ public class UserController {
   @PreAuthorize("isAuthenticated()")
   public UserSummaryDto updateIcon(@RequestParam("file") MultipartFile file) throws ErrorResponseException {
     try {
-      UserSummaryDto sessionUser = userService.getSessionUser()
+      userService.getSessionUser()
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
-      return userIconService.updateIcon(file, sessionUser);
+      return userIconService.updateIcon(file);
     } catch (Exception e) {
-      Logger logger = org.slf4j.LoggerFactory.getLogger(UserController.class);
-      logger.error("Failed to update icon", e);
       throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

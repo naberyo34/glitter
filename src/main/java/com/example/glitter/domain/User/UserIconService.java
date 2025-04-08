@@ -15,21 +15,31 @@ public class UserIconService {
   private ImageService imageService;
 
   /**
-   * 対象ユーザーのアイコン画像を更新する
+   * セッションユーザーのアイコン画像を更新する
    * 
    * @param file
-   * @param user
-   * @return
+   * @return UserSummaryDto
    * @throws Exception
    */
-  public UserSummaryDto updateIcon(MultipartFile file, UserSummaryDto user) throws Exception {
+  public UserSummaryDto updateIcon(MultipartFile file) throws Exception {
+    // セッションユーザーの取得
+    UserSummaryDto sessionUser = userService.getSessionUser().orElseThrow();
     // 既存のアイコン画像を削除
-    if (StringUtils.hasLength(user.getIcon())) {
-      imageService.delete(user.getIcon());
+    if (StringUtils.hasLength(sessionUser.getIcon())) {
+      imageService.delete(sessionUser.getIcon());
     }
+    // ファイル名、パスを作成
+    String originalFileName = file.getOriginalFilename();
+    if (originalFileName == null) {
+      throw new Exception("file name is null");
+    }
+    String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+    String fileName = "icon" + extension;
+    String key = sessionUser.getId() + "/" + fileName;
     // 画像をアップロード
-    String iconPath = imageService.upload(file, user).orElseThrow();
-    user.setIcon(iconPath);
-    return userService.updateFromSummary(user);
+    imageService.upload(file, key);
+    // データベース上のアイコン画像のパスを更新
+    sessionUser.setIcon(key);
+    return userService.updateFromSummary(sessionUser);
   }
 }

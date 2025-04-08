@@ -23,11 +23,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostResponseDto;
+import com.example.glitter.domain.User.UserSummaryDto;
 import com.example.glitter.generated.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,15 +42,18 @@ public class UserControllerTest {
 
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
       "postgres:16-alpine");
+  static MinIOContainer minio = new MinIOContainer("minio/minio");
 
   @BeforeAll
   static void beforeAll() {
     postgres.start();
+    minio.start();
   }
 
   @AfterAll
   static void afterAll() {
     postgres.stop();
+    minio.stop();
   }
 
   @DynamicPropertySource
@@ -55,6 +61,10 @@ public class UserControllerTest {
     registry.add("spring.datasource.url", postgres::getJdbcUrl);
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
+    registry.add("env.storage-url", minio::getS3URL);
+    registry.add("env.storage-username", minio::getUserName);
+    registry.add("env.storage-password", minio::getPassword);
+    registry.add("env.storage-bucket-name", () -> "test");
   }
 
   @Autowired
@@ -170,6 +180,22 @@ public class UserControllerTest {
         post("/user").content(objectMapper.writeValueAsString(user))
             .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
         .andExpect(status().isConflict());
+  }
+
+  @Test
+  @Transactional
+  @WithMockUser(username = "test_user")
+  void ログイン中のユーザーのアイコン画像を変更できる() throws Exception {
+    MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
+        Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
+    MvcResult result = mockMvc.perform(
+        MockMvcRequestBuilders.multipart("/user/me/icon")
+            .file(mockMultipartFile)
+            .contentType(MediaType.MULTIPART_FORM_DATA))
+        .andExpect(status().isOk()).andReturn();
+
+    UserSummaryDto resultUser = objectMapper.readValue(result.getResponse().getContentAsString(), UserSummaryDto.class);
+    assertEquals(resultUser.getIcon(), "test_user/icon.jpg");
   }
 
   @Test

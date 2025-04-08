@@ -1,12 +1,25 @@
 package com.example.glitter.domain.User;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -16,15 +29,18 @@ public class UserIconServiceTest {
 
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
       "postgres:16-alpine");
+  static MinIOContainer minio = new MinIOContainer("minio/minio");
 
   @BeforeAll
   static void beforeAll() {
     postgres.start();
+    minio.start();
   }
 
   @AfterAll
   static void afterAll() {
     postgres.stop();
+    minio.stop();
   }
 
   @DynamicPropertySource
@@ -32,11 +48,37 @@ public class UserIconServiceTest {
     registry.add("spring.datasource.url", postgres::getJdbcUrl);
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
+    registry.add("env.storage-url", minio::getS3URL);
+    registry.add("env.storage-username", minio::getUserName);
+    registry.add("env.storage-password", minio::getPassword);
+    registry.add("env.storage-bucket-name", () -> "test");
   }
 
   @Autowired
   private UserIconService userIconService;
 
-  @Autowired
-  private UserService userService;
+  private String EXAMPLE_IMAGE_FILE_PATH = "src/test/resources/static/images/example.jpg";
+
+  @Test
+  @Transactional
+  @WithMockUser(username = "test_user")
+  void ログインユーザーがアイコンを変更できる() throws Exception {
+    MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
+          Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
+    UserSummaryDto result = userIconService.updateIcon(mockMultipartFile);
+    assertEquals(result.getIcon(), "test_user/icon.jpg");
+  }
+
+  @Test
+  @Transactional
+  void 非ログインユーザーはアイコンの変更に失敗する() throws Exception {
+    MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
+          Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
+    try {
+      userIconService.updateIcon(mockMultipartFile);
+      fail();
+    } catch (Exception e) {
+      assertNotNull(e);
+    }
+  }
 }
