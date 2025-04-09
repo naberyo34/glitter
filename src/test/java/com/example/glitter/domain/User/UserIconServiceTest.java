@@ -2,7 +2,7 @@ package com.example.glitter.domain.User;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,16 +64,16 @@ public class UserIconServiceTest {
   @WithMockUser(username = "test_user")
   void ログインユーザーがアイコンを変更できる() throws Exception {
     MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
-          Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
-    UserSummaryDto result = userIconService.updateIcon(mockMultipartFile);
-    assertEquals(result.getIcon(), "test_user/icon.jpg");
+        Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
+    UserSummaryDto resultUser = userIconService.updateIcon(mockMultipartFile);
+    assertTrue(resultUser.getIcon().endsWith(".jpg"));
   }
 
   @Test
   @Transactional
   void 非ログインユーザーはアイコンの変更に失敗する() throws Exception {
     MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
-          Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
+        Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
     try {
       userIconService.updateIcon(mockMultipartFile);
       fail();

@@ -1,5 +1,6 @@
 package com.example.glitter.controller;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -195,7 +196,7 @@ public class UserControllerTest {
         .andExpect(status().isOk()).andReturn();
 
     UserSummaryDto resultUser = objectMapper.readValue(result.getResponse().getContentAsString(), UserSummaryDto.class);
-    assertEquals(resultUser.getIcon(), "test_user/icon.jpg");
+    assertTrue(resultUser.getIcon().endsWith(".jpg"));
   }
 
   @Test

@@ -1,5 +1,7 @@
 package com.example.glitter.domain.User;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -29,12 +31,8 @@ public class UserIconService {
       imageService.delete(sessionUser.getIcon());
     }
     // ファイル名、パスを作成
-    String originalFileName = file.getOriginalFilename();
-    if (originalFileName == null) {
-      throw new Exception("file name is null");
-    }
-    String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-    String fileName = "icon" + extension;
+    // upload は 画像を jpg 形式で保存するため、拡張子は必ず jpg
+    String fileName = UUID.randomUUID().toString() + ".jpg";
     String key = sessionUser.getId() + "/" + fileName;
     // 画像をアップロード
     imageService.upload(file, key);
