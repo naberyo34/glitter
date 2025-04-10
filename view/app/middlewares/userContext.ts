@@ -5,6 +5,7 @@ export type User = {
   username: string;
   email: string;
   profile?: string;
+  icon?: string;
 }
 
 export const userContext = unstable_createContext<User | null>(null);

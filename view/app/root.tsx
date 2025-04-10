@@ -4,11 +4,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  isRouteErrorResponse,
+  isRouteErrorResponse
 } from 'react-router';
 
 import type { Route } from './+types/root';
-import './app.css';
+import './index.css';
 import { authMiddleware } from './middlewares/auth.server';
 
 export const unstable_middleware = [authMiddleware];
@@ -23,9 +23,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <main className="flex flex-col items-center p-4">
-          <div className="size-160">{children}</div>
-        </main>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>

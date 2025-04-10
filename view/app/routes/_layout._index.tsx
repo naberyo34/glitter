@@ -1,3 +1,4 @@
+import { format } from '@formkit/tempo';
 import { glitterApiClient } from 'api/client';
 import {
   type ActionFunctionArgs,
@@ -5,37 +6,37 @@ import {
   type LoaderFunctionArgs,
   type unstable_RouterContextProvider,
   useLoaderData,
+  useOutletContext,
 } from 'react-router';
 import { joinURL } from 'ufo';
+import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import { url } from '~/lib/url.server';
 import { authCookie } from '~/middlewares/auth.server';
 import { userContext } from '~/middlewares/userContext';
+import type { RootLayoutContext } from './_layout';
 
 export async function loader({
   context,
 }: LoaderFunctionArgs<unstable_RouterContextProvider>) {
   const user = context.get(userContext);
 
-  if (user) {
-    const { data } = await glitterApiClient.GET('/user/{id}/post', {
-      params: {
-        path: {
-          id: user.id,
-        },
-      },
-    });
-
-    return { user: user, posts: data, storageUrl: url.storage };
+  if (!user) {
+    return { posts: null };
   }
 
-  return { user: user, storageUrl: url.storage };
+  const { data } = await glitterApiClient.GET('/user/{id}/post', {
+    params: {
+      path: {
+        id: user.id,
+      },
+    },
+  });
+
+  return { posts: data };
 }
 
-export async function action({
-  request,
-}: ActionFunctionArgs<unstable_RouterContextProvider>) {
+export async function action({ request }: ActionFunctionArgs) {
   const cookieHeader = request.headers.get('Cookie');
   const cookie = (await authCookie.parse(cookieHeader)) || {};
 
@@ -57,18 +58,27 @@ export async function action({
 }
 
 export default function Index() {
-  const { user, posts, storageUrl } = useLoaderData<typeof loader>();
+  const { user, appUrl } = useOutletContext<RootLayoutContext>();
+  const { posts } = useLoaderData<typeof loader>();
   return (
     <section>
       <ul className="flex flex-col gap-4">
         {posts?.map((post) => (
-          <li key={post.id} className="flex gap-2">
-            {post.user.icon && (<img src={joinURL(storageUrl, 'glitter', post.user.icon)} alt="" width="40" height="40" className="w-[40px] h-[40px] object-cover" />)}
+          <li key={post.id} className="flex gap-4">
+            {post.user.icon && (
+              <Avatar>
+                <AvatarImage
+                  src={joinURL(appUrl.storage, 'glitter', post.user.icon)}
+                />
+              </Avatar>
+            )}
             <div>
               <div className="flex gap-2">
-                <p>{post.user.username}</p>
-                <p>@{post.user.id}</p>
-                <p>{post.createdAt}</p>
+                <p className="font-bold">{post.user.username}</p>
+                <p className="text-muted-foreground">@{post.user.id}</p>
+                <p className="text-muted-foreground">
+                  {format(post.createdAt)}
+                </p>
               </div>
               <p>{post.content}</p>
             </div>

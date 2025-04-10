@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import { url } from "~/lib/url.server";
+import { appUrl } from "~/lib/appUrl.server";
 import type { paths } from "./schema";
 
-export const glitterApiClient = createClient<paths>({ baseUrl: url.api });
+export const glitterApiClient = createClient<paths>({ baseUrl: appUrl.api });
