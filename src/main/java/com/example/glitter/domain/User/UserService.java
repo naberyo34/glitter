@@ -31,6 +31,15 @@ public class UserService {
   }
 
   /**
+   * ユーザーの総数を取得する
+   * 
+   * @return ユーザーの総数
+   */
+  public long countAll() {
+    return userRepository.countAll();
+  }
+
+  /**
    * セッションユーザー Summary を取得する
    * 
    * @return セッションユーザー Summary (存在しない場合は null)

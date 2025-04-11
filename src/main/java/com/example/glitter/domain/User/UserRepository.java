@@ -29,9 +29,25 @@ public class UserRepository {
     return userMapper.selectByPrimaryKey(id);
   }
 
+  /**
+   * メールアドレスからユーザーを取得する
+   * 
+   * @param email
+   * @return 合致するユーザー (存在しない場合は null)
+   */
   @Transactional
   public Optional<User> findByEmail(String email) {
     return userMapper.selectOne((c) -> c.where(UserDynamicSqlSupport.email, isEqualTo(email)));
+  }
+
+  /**
+   * ユーザーの総数を取得する
+   * 
+   * @return ユーザーの総数
+   */
+  @Transactional
+  public long countAll() {
+    return userMapper.count((c) -> c);
   }
 
   /**

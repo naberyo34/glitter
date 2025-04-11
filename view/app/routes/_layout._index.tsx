@@ -9,7 +9,7 @@ import {
   useOutletContext,
 } from 'react-router';
 import { joinURL } from 'ufo';
-import { Avatar, AvatarImage } from '~/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { authCookie } from '~/middlewares/auth.server';
@@ -67,9 +67,11 @@ export default function Index() {
           <li key={post.id} className="flex gap-4">
             {post.user.icon && (
               <Avatar>
-                <AvatarImage
-                  src={joinURL(appUrl.storage, 'glitter', post.user.icon)}
-                />
+                {post.user.icon && (
+                  <AvatarImage
+                    src={joinURL(appUrl.storage, 'glitter', post.user.icon)}
+                  />
+                )}
               </Avatar>
             )}
             <div>

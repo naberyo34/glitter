@@ -1,4 +1,13 @@
 import {
+  Bell,
+  ChevronsUpDown,
+  Home,
+  LogOut,
+  Settings,
+  Sparkles,
+  UserCircle,
+} from 'lucide-react';
+import {
   Link,
   type LoaderFunctionArgs,
   Outlet,
@@ -6,7 +15,14 @@ import {
   useLoaderData,
 } from 'react-router';
 import { joinURL } from 'ufo';
-import { Avatar, AvatarImage } from '~/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -36,35 +52,74 @@ export default function RootLayout() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader>Glitter</SidebarHeader>
+        <SidebarHeader>
+          <Sparkles />
+        </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarMenuButton asChild>
-              <Link to="/login">ログイン</Link>
+              <Link to="/">
+                <Home />
+                ホーム
+              </Link>
             </SidebarMenuButton>
             <SidebarMenuButton asChild>
-              <Link to="/logout">ログアウト</Link>
+              <Link to="/">
+                <Bell />
+                通知
+              </Link>
             </SidebarMenuButton>
-            <SidebarMenuButton>ポスト</SidebarMenuButton>
+            <SidebarMenuButton asChild>
+              <Link to="/">
+                <Settings />
+                設定
+              </Link>
+            </SidebarMenuButton>
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          {user?.icon && (
-            <div className="flex items-center gap-4">
-              <Avatar>
-                <AvatarImage
-                  src={joinURL(appUrl.storage, 'glitter', user.icon)}
-                />
-              </Avatar>
-              <div>
-                <p className="font-bold">{user.username}</p>
-                <p className="text-muted-foreground">@{user.id}</p>
-              </div>
-            </div>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton className="flex justify-between h-12">
+                  <div className="flex gap-2">
+                    <Avatar>
+                      {user.icon && (
+                        <AvatarImage
+                          src={joinURL(appUrl.storage, 'glitter', user.icon)}
+                        />
+                      )}
+                    </Avatar>
+                    <div>
+                      <p className="text-xs font-bold">{user.username}</p>
+                      <p className="text-xs text-muted-foreground">
+                        @{user.id}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronsUpDown />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link to={joinURL('/', user.id)}>
+                    <UserCircle />
+                    プロフィール
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/logout">
+                    <LogOut />
+                    ログアウト
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </SidebarFooter>
       </Sidebar>
-      <main className="p-4">
+      <main>
         <Outlet context={{ user, appUrl }} />
       </main>
     </SidebarProvider>
