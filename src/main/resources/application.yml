@@ -29,3 +29,4 @@ env:
   storage-bucket-name: ${STORAGE_BUCKET_NAME}
   storage-username: ${STORAGE_USERNAME}
   storage-password: ${STORAGE_PASSWORD}
+  domain: ${DOMAIN}
