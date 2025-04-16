@@ -1,7 +1,6 @@
 package com.example.glitter.domain.WebFinger;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.glitter.domain.User.UserService;
+import com.example.glitter.domain.WebFinger.WebFinger.Link;
 
 @Service
 public class WebFingerServiceImpl implements WebFingerService {
@@ -26,7 +26,7 @@ public class WebFingerServiceImpl implements WebFingerService {
   private Pattern ACCT_PATTERN = Pattern.compile("^acct:([^@]+)@(.+)$");
 
   @Override
-  public Optional<Map<String, Object>> getJrd(String resource) {
+  public Optional<WebFinger> getJrd(String resource) {
     if (resource == null || resource.isEmpty()) {
       return Optional.empty();
     }
@@ -48,15 +48,16 @@ public class WebFingerServiceImpl implements WebFingerService {
     // ユーザーの存在確認
     return userService.findById(userId).map(_ -> {
       // JRD (JSON Resource Descriptor) を構築
-      return Map.of(
-          "subject", resource,
-          "links", List.of(
-              Map.of(
-                  "rel", "self",
-                  "type", "application/activity+json",
-                  "href", apiUrl + "/actor/" + userId)
-          )
-      );
+      Link link = Link.builder()
+          .rel("self")
+          .type("application/activity+json")
+          .href(apiUrl + "/user/" + userId)
+          .build();
+          
+      return WebFinger.builder()
+          .subject(resource)
+          .links(Collections.singletonList(link))
+          .build();
     });
   }
 }

@@ -1,6 +1,5 @@
 package com.example.glitter.domain.WebFinger;
 
-import java.util.Map;
 import java.util.Optional;
 
 public interface WebFingerService {
@@ -9,8 +8,8 @@ public interface WebFingerService {
    * JRD (JSON Resource Descriptor) を返却します。
    *
    * @param resource WebFinger のリソース URI (例: acct:user@example.com)
-   * @return JRD を表す Map オブジェクト
+   * @return JRD を表す WebFinger オブジェクト
    */
-  Optional<Map<String, Object>> getJrd(String resource);
+  Optional<WebFinger> getJrd(String resource);
 }
 

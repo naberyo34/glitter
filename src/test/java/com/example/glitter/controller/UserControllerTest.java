@@ -4,6 +4,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.file.Files;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -71,12 +74,30 @@ public class UserControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
+  @Value("${env.api-url}")
+  private String apiUrl;
+
   private ObjectMapper objectMapper = new ObjectMapper();
   private String EXAMPLE_IMAGE_FILE_PATH = "src/test/resources/static/images/example.jpg";
 
   @Test
   void IDからユーザーを取得したときユーザーのDTOが返る() throws Exception {
     mockMvc.perform(get("/user/test_user")).andExpect(status().isOk());
+  }
+
+  @Test
+  void ActivityPubとしてユーザーを取得したとき正しいActorJSONが返る() throws Exception {
+    mockMvc.perform(get("/user/test_user")
+        .accept("application/activity+json"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/activity+json"))
+        .andExpect(jsonPath("$.id").value(apiUrl + "/user/test_user"))
+        .andExpect(jsonPath("$.type").value("Person"))
+        .andExpect(jsonPath("$.preferredUsername").value("test_user"))
+        .andExpect(jsonPath("$.name").value("テストユーザー"))
+        .andExpect(jsonPath("$.summary").value("テスト用のアカウントです。"))
+        .andExpect(jsonPath("$.inbox").value(apiUrl + "/user/test_user/inbox"))
+        .andExpect(jsonPath("$.outbox").value(apiUrl + "/user/test_user/outbox"));
   }
 
   @Test

@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.ErrorResponseException;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.glitter.domain.ActivityPub.Actor;
+import com.example.glitter.domain.ActivityPub.ActivityPubService;
 import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.Post.PostService;
 import com.example.glitter.domain.User.UserDto;
@@ -31,6 +35,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -43,18 +48,35 @@ public class UserController {
   private PostService postService;
   @Autowired
   private UserIconService userIconService;
+  @Autowired
+  private ActivityPubService activityPubService;
 
-  @Operation(summary = "IDからユーザーを取得", description = "IDからユーザーを取得します。", responses = {
+  @Operation(summary = "IDからユーザーを取得", description = "IDからユーザーを取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Actor形式でJSONを返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = UserSummaryDto.class))
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserSummaryDto.class)),
+          @Content(mediaType = "application/activity+json", schema = @Schema(implementation = Actor.class))
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからないとき", content = {
-          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)),
       }) })
   @GetMapping("/{id}")
-  public UserSummaryDto findById(@PathVariable String id) throws ErrorResponseException {
-    return userService.findById(id)
-        .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
+  public ResponseEntity<?> findById(@PathVariable String id, HttpServletRequest request) throws ErrorResponseException {
+    // Accept ヘッダーを確認
+    String acceptHeader = request.getHeader("Accept");
+    boolean isActivityPubRequest = acceptHeader != null && acceptHeader.contains("application/activity+json");
+    
+    if (isActivityPubRequest) {
+      // ActivityPub Actorとしてユーザー情報を返す
+      return activityPubService.getActorObject(id)
+          .map(actor -> ResponseEntity.ok()
+              .contentType(MediaType.parseMediaType("application/activity+json"))
+              .body(actor))
+          .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
+    } else {
+      // 通常のユーザー情報を返す
+      return ResponseEntity.ok(userService.findById(id)
+          .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND)));
+    }
   }
 
   @Operation(summary = "ユーザーの投稿を取得", description = "ユーザーの投稿を取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {
