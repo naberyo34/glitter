@@ -31,8 +31,8 @@ public class UserIconService {
       imageService.delete(sessionUser.getIcon());
     }
     // ファイル名、パスを作成
-    // upload は 画像を jpg 形式で保存するため、拡張子は必ず jpg
-    String fileName = UUID.randomUUID().toString() + ".jpg";
+    String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+    String fileName = UUID.randomUUID().toString() +  "." + extension;
     String key = sessionUser.getId() + "/" + fileName;
     // 画像をアップロード
     imageService.upload(file, key);
