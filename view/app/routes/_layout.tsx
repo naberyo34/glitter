@@ -34,6 +34,7 @@ import {
 } from '~/components/ui/sidebar';
 import { appUrl } from '~/lib/appUrl.server';
 import { type User, userContext } from '~/middlewares/userContext';
+import Glitter from 'public/glitter.svg?react';
 
 export type RootLayoutContext = {
   user: User | null;
@@ -53,7 +54,9 @@ export default function RootLayout() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <Sparkles />
+          <Link to="/" className="p-4">
+            <Glitter className="fill-current transition-opacity opacity-10 hover:opacity-100" />
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
