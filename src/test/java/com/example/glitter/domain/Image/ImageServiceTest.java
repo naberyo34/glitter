@@ -53,8 +53,8 @@ public class ImageServiceTest {
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
     registry.add("env.storage-url", minio::getS3URL);
-    registry.add("env.storage-username", minio::getUserName);
-    registry.add("env.storage-password", minio::getPassword);
+    registry.add("env.minio-username", minio::getUserName);
+    registry.add("env.minio-password", minio::getPassword);
     registry.add("env.storage-bucket-name", () -> "test");
   }
 

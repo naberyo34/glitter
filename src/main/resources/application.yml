@@ -9,6 +9,8 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  profiles:
+    active: ${ENV}
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
@@ -27,6 +29,6 @@ env:
   client-url: ${CLIENT_URL}
   storage-url: ${STORAGE_URL}
   storage-bucket-name: ${STORAGE_BUCKET_NAME}
-  storage-username: ${STORAGE_USERNAME}
-  storage-password: ${STORAGE_PASSWORD}
+  minio-username: ${MINIO_USERNAME}
+  minio-password: ${MINIO_PASSWORD}
   domain: ${DOMAIN}

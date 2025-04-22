@@ -65,7 +65,7 @@ public class ActivityPubServiceImpl implements ActivityPubService {
 
     // アイコン情報があれば追加
     if (user.getIcon() != null && !user.getIcon().isEmpty()) {
-      builder.icon(new String[]{storageUrl + "/" + bucketName + "/" + user.getIcon()});
+      builder.icon(new String[]{storageUrl + "/" + user.getIcon()});
     }
 
     return builder.build();

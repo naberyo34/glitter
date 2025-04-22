@@ -26,6 +26,9 @@ public class ImageService {
   @Value("${env.storage-bucket-name}")
   private String bucketName;
 
+  @Value("${spring.profiles.active}")
+  private String env;
+
   private long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
   private int MAX_ICON_SIZE = 400;
 
@@ -90,8 +93,8 @@ public class ImageService {
         .contentType(file.getContentType())
         .build();
 
-    // バケットがなければ作る
-    if (!s3Client.listBuckets().buckets().stream()
+    // テスト向け処理: バケットが存在しない場合に作成
+    if (env.equals("development") && !s3Client.listBuckets().buckets().stream()
         .anyMatch(b -> b.name().equals(bucketName))) {
       s3Client.createBucket(b -> b.bucket(bucketName));
     }
