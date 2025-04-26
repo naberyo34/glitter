@@ -69,7 +69,7 @@ export default function Index() {
               <Avatar>
                 {post.user.icon && (
                   <AvatarImage
-                    src={joinURL(appUrl.storage, 'glitter', post.user.icon)}
+                    src={joinURL(appUrl.storage, post.user.icon)}
                   />
                 )}
               </Avatar>

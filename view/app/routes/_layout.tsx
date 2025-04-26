@@ -88,7 +88,7 @@ export default function RootLayout() {
                     <Avatar>
                       {user.icon && (
                         <AvatarImage
-                          src={joinURL(appUrl.storage, 'glitter', user.icon)}
+                          src={joinURL(appUrl.storage, user.icon)}
                         />
                       )}
                     </Avatar>
