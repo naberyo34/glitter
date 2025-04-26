@@ -4,7 +4,6 @@ import {
   Home,
   LogOut,
   Settings,
-  Sparkles,
   UserCircle,
 } from 'lucide-react';
 import {
