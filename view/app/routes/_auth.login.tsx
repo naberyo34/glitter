@@ -1,15 +1,14 @@
-import { glitterApiClient } from 'api/client';
 import {
   type ActionFunctionArgs,
   Form,
   type LoaderFunctionArgs,
-  redirect,
-  useActionData,
+  redirect
 } from 'react-router';
+import { glitterApiClient } from '~/api/client.server';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { authCookie } from '~/middlewares/auth.server';
-import { userContext } from '~/middlewares/userContext';
+import { userContext } from '~/middlewares/userContext.server';
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const user = context.get(userContext);

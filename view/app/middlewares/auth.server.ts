@@ -1,6 +1,6 @@
-import { glitterApiClient } from 'api/client';
+import { glitterApiClient } from '~/api/client.server';
 import { createCookie, type unstable_MiddlewareFunction } from 'react-router';
-import { userContext } from './userContext';
+import { userContext } from './userContext.server';
 
 export const authCookie = createCookie("auth", {
   maxAge: 604_800, // 1 week

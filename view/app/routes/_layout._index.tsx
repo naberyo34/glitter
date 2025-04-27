@@ -1,5 +1,4 @@
 import { format } from '@formkit/tempo';
-import { glitterApiClient } from 'api/client';
 import {
   type ActionFunctionArgs,
   Form,
@@ -9,11 +8,12 @@ import {
   useOutletContext,
 } from 'react-router';
 import { joinURL } from 'ufo';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { glitterApiClient } from '~/api/client.server';
+import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { authCookie } from '~/middlewares/auth.server';
-import { userContext } from '~/middlewares/userContext';
+import { userContext } from '~/middlewares/userContext.server';
 import type { RootLayoutContext } from './_layout';
 
 export async function loader({

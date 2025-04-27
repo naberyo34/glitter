@@ -32,7 +32,7 @@ import {
   SidebarProvider,
 } from '~/components/ui/sidebar';
 import { appUrl } from '~/lib/appUrl.server';
-import { type User, userContext } from '~/middlewares/userContext';
+import { type User, userContext } from '~/middlewares/userContext.server';
 import Glitter from 'public/glitter.svg?react';
 
 export type RootLayoutContext = {

@@ -1,4 +1,4 @@
-import { glitterApiClient } from 'api/client';
+import { glitterApiClient } from '~/api/client.server';
 import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
 
 export async function loader({ params }: LoaderFunctionArgs) {
