@@ -1,27 +1,5 @@
-import {
-  Bell,
-  ChevronsUpDown,
-  Home,
-  LogOut,
-  Settings,
-  UserCircle,
-} from 'lucide-react';
-import {
-  Link,
-  type LoaderFunctionArgs,
-  Outlet,
-  type unstable_RouterContextProvider,
-  useLoaderData,
-} from 'react-router';
-import { joinURL } from 'ufo';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
+import { Bell, Home, Settings, Sparkles } from 'lucide-react';
+import { Link, Outlet } from 'react-router';
 import {
   Sidebar,
   SidebarContent,
@@ -31,30 +9,14 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from '~/components/ui/sidebar';
-import { appUrl } from '~/lib/appUrl.server';
-import { type User, userContext } from '~/middlewares/userContext.server';
-import Glitter from 'public/glitter.svg?react';
-
-export type RootLayoutContext = {
-  user: User | null;
-  appUrl: typeof appUrl;
-};
-
-export async function loader({
-  context,
-}: LoaderFunctionArgs<unstable_RouterContextProvider>) {
-  const user = context.get(userContext);
-  return { user: user, appUrl: appUrl };
-}
 
 export default function RootLayout() {
-  const { user, appUrl } = useLoaderData<typeof loader>();
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <Link to="/" className="p-4">
-            <Glitter className="fill-current transition-opacity opacity-10 hover:opacity-100" />
+          <Link to="/">
+            <Sparkles />
           </Link>
         </SidebarHeader>
         <SidebarContent>
@@ -80,7 +42,7 @@ export default function RootLayout() {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          {user && (
+          {/* {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton className="flex justify-between h-12">
@@ -118,11 +80,11 @@ export default function RootLayout() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          )} */}
         </SidebarFooter>
       </Sidebar>
       <main>
-        <Outlet context={{ user, appUrl }} />
+        <Outlet />
       </main>
     </SidebarProvider>
   );

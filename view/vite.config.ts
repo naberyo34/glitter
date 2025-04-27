@@ -1,27 +1,24 @@
-import { reactRouter } from "@react-router/dev/vite";
-import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
-import svgr from 'vite-plugin-svgr';
-import tsconfigPaths from "vite-tsconfig-paths";
+import adapter from '@hono/vite-dev-server/cloudflare';
+import { reactRouter } from '@react-router/dev/vite';
+import tailwindcss from '@tailwindcss/vite';
+import serverAdapter from 'hono-react-router-adapter/vite';
+import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths(), svgr({
-    // ?react をつけたとき svgr を利用
-    include: '**/*.svg?react',
-    svgrOptions: {
-      plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
-      svgoConfig: {
-        plugins: [
-          {
-            name: 'preset-default',
-            params: {
-              overrides: {
-                removeViewBox: false,
-              },
-            },
-          },
-        ],
-      },
+  plugins: [
+    tailwindcss(),
+    reactRouter(),
+    tsconfigPaths(),
+    serverAdapter({
+      adapter,
+      entry: 'server/index.ts',
+    }),
+  ],
+  ssr: {
+    resolve: {
+      conditions: ["workerd", "worker", "browser"],
+      externalConditions: ['workerd', 'worker'],
     },
-  }),],
+  },
 });
