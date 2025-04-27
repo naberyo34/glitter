@@ -1,20 +1,28 @@
-import { glitterApiClient } from '~/api/client.server';
+import { createGlitterApiClient } from '~/api/client';
 import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, context }: LoaderFunctionArgs) {
   if (!params.id) {
     throw new Response(null, { status: 404 });
   }
 
-  const { data: user, error: userError } = await glitterApiClient.GET('/user/{id}', {
-    params: { path: { id: params.id } },
-  });
+  const glitterApiClient = createGlitterApiClient(context.cloudflare.env.API_URL);
+
+  const { data: user, error: userError } = await glitterApiClient.GET(
+    '/user/{id}',
+    {
+      params: { path: { id: params.id } },
+    },
+  );
   const { data: posts } = await glitterApiClient.GET('/user/{id}/post', {
     params: { path: { id: params.id } },
   });
 
   if (userError) {
-    throw new Response(null, { status: userError.status, statusText: userError.title });
+    throw new Response(null, {
+      status: userError.status,
+      statusText: userError.title,
+    });
   }
 
   return {

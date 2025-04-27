@@ -5,6 +5,11 @@
 /.react-router/
 /build/
 
+# Cloudflare
+/.wrangler/
+
+# User
 /api/api-docs.yaml
 .env.*
 !.env.example
+.dev.vars
