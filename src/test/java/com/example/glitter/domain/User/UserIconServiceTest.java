@@ -14,13 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import com.example.glitter.util.WithMockJwt;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserIconServiceTest {
@@ -61,7 +62,7 @@ public class UserIconServiceTest {
 
   @Test
   @Transactional
-  @WithMockUser(username = "test_user")
+  @WithMockJwt
   void ログインユーザーがアイコンを変更できる() throws Exception {
     MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
         Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));

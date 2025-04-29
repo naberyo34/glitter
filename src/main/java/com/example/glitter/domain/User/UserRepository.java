@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +58,16 @@ public class UserRepository {
    */
   @Transactional
   public Optional<User> getSessionUser() {
-    return userMapper.selectByPrimaryKey(SecurityContextHolder.getContext().getAuthentication().getName());
+    try {
+      Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      if (principal instanceof Jwt jwt) {
+        String sub = jwt.getClaimAsString("sub");
+        return userMapper.selectOne((c) -> c.where(UserDynamicSqlSupport.sub, isEqualTo(sub)));
+      }
+      return Optional.empty();
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   /**

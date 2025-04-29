@@ -8,7 +8,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
- * 本番環境用の MinIO 向け S3 クライアント 設定
+ * 本番環境用の AWS 向け S3 クライアント 設定
  */
 @Configuration
 @Profile("production")

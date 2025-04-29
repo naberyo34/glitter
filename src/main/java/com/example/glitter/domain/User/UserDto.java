@@ -25,10 +25,6 @@ public class UserDto {
   @Schema(description = "ユーザー名", example = "太郎", requiredMode = Schema.RequiredMode.REQUIRED)
   private String username;
 
-  @Size(min = 6)
-  @Schema(description = "パスワード", example = "$2a$12$Z3MQA08C1d8S89U7nA0/1eMMxRw061BKTZHl.OlGzZjFMLQs6FC3y", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String password;
-
   @Email
   @Schema(description = "メールアドレス", example = "example@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
   private String email;
@@ -43,7 +39,6 @@ public class UserDto {
     User user = new User();
     user.setId(id);
     user.setUsername(username);
-    user.setPassword(password);
     user.setEmail(email);
     user.setProfile(profile);
     user.setIcon(icon);
@@ -54,7 +49,6 @@ public class UserDto {
     UserDto userDto = new UserDto();
     userDto.setId(user.getId());
     userDto.setUsername(user.getUsername());
-    userDto.setPassword(user.getPassword());
     userDto.setEmail(user.getEmail());
     userDto.setProfile(user.getProfile());
     userDto.setIcon(user.getIcon());

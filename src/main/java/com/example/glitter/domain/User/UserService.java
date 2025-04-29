@@ -3,7 +3,6 @@ package com.example.glitter.domain.User;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -16,8 +15,6 @@ import jakarta.validation.Valid;
 public class UserService {
   @Autowired
   private UserRepository userRepository;
-  @Autowired
-  private PasswordEncoder passwordEncoder;
 
   /**
    * ID からユーザー Summary を取得する
@@ -58,25 +55,6 @@ public class UserService {
   }
 
   /**
-   * ユーザーを追加する
-   * 追加に成功した場合、追加したユーザー Summary を返す
-   * 
-   * @param userDto
-   * @return 追加したユーザー Summary (追加に失敗した場合は null)
-   */
-  public UserSummaryDto add(@Valid UserDto userDto) throws Exception {
-    try {
-      User user = userDto.toEntity();
-      // パスワードはハッシュ化して保存する
-      user.setPassword(passwordEncoder.encode(user.getPassword()));
-      User result = userRepository.insert(user);
-      return UserSummaryDto.fromEntity(result);
-    } catch (Exception e) {
-      throw e;
-    }
-  }
-
-  /**
    * ユーザーを更新する
    * 更新に成功した場合、更新したユーザー Summary を返す
    * 
@@ -110,7 +88,6 @@ public class UserService {
       User user = userRepository.findById(userSummaryDto.getId()).orElseThrow();
       user.setUsername(userSummaryDto.getUsername());
       user.setProfile(userSummaryDto.getProfile());
-      user.setEmail(userSummaryDto.getEmail());
       user.setIcon(userSummaryDto.getIcon());
       User result = userRepository.update(user);
       return UserSummaryDto.fromEntity(result);

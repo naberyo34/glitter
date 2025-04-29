@@ -2,10 +2,7 @@ package com.example.glitter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.glitter.domain.Auth.RsaKeyProperties;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -19,7 +16,6 @@ import io.swagger.v3.oas.annotations.info.Info;
 )
 @SpringBootApplication
 @RestController
-@EnableConfigurationProperties(RsaKeyProperties.class)
 public class GlitterApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(GlitterApplication.class, args);

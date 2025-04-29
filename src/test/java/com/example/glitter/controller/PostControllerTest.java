@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +20,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequestDto;
+import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -55,8 +55,8 @@ public class PostControllerTest {
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  @WithMockUser(username = "test_user")
   @Transactional
+  @WithMockJwt
   void ログイン状態で投稿を追加できる() throws Exception {
     PostRequestDto post = new PostRequestDto("new post");
     mockMvc.perform(post("/post")

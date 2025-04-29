@@ -3,7 +3,6 @@ package com.example.glitter.controller;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,7 +33,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.User.UserSummaryDto;
-import com.example.glitter.generated.User;
+import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -130,7 +128,7 @@ public class UserControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "test_user")
+  @WithMockJwt
   void ログイン中にセッションユーザーを取得したときユーザーのDTOが返る() throws Exception {
     mockMvc.perform(get("/user/me")).andExpect(status().isOk());
   }
@@ -141,72 +139,7 @@ public class UserControllerTest {
 
   @Test
   @Transactional
-  void 正しいパラメーターでユーザーを作成できる() throws Exception {
-    User user = new User();
-    user.setId("new_user");
-    user.setPassword("password");
-    user.setUsername("新しいユーザー");
-    user.setEmail("new@example.com");
-
-    mockMvc.perform(
-        post("/user").content(objectMapper.writeValueAsString(user))
-            .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isOk()).andExpect((result) -> {
-          String content = result.getResponse().getContentAsString();
-          User newUser = objectMapper.readValue(content, User.class);
-          assertEquals(newUser.getUsername(), "新しいユーザー");
-        });
-  }
-
-  @Test
-  @Transactional
-  void 無効なパラメーターでユーザーを作成しようとしたとき400が返る() throws Exception {
-    User invalidUser = new User();
-    invalidUser.setId("new_user");
-    invalidUser.setPassword("password");
-    invalidUser.setUsername("新しいユーザー");
-    // メールアドレスが無効
-    invalidUser.setEmail("invalid_email");
-
-    mockMvc.perform(
-        post("/user").content(objectMapper.writeValueAsString(invalidUser))
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  @Transactional
-  void 存在するIDでユーザーを作成しようとしたとき409が返る() throws Exception {
-    User user = new User();
-    user.setId("test_user");
-    user.setPassword("password");
-    user.setUsername("新しいユーザー");
-    user.setEmail("new@example.com");
-
-    mockMvc.perform(
-        post("/user").content(objectMapper.writeValueAsString(user))
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
-        .andExpect(status().isConflict());
-  }
-
-  @Test
-  @Transactional
-  void 存在するメールアドレスでユーザーを作成しようとしたとき409が返る() throws Exception {
-    User user = new User();
-    user.setId("new_user");
-    user.setPassword("password");
-    user.setUsername("新しいユーザー");
-    user.setEmail("test@example.com");
-
-    mockMvc.perform(
-        post("/user").content(objectMapper.writeValueAsString(user))
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
-        .andExpect(status().isConflict());
-  }
-
-  @Test
-  @Transactional
-  @WithMockUser(username = "test_user")
+  @WithMockJwt
   void ログイン中のユーザーのアイコン画像を変更できる() throws Exception {
     MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
         Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));

@@ -4,10 +4,10 @@ create schema if not exists public;
 create table if not exists public."user" (
   id text not null primary key,
   username text not null,
-  password text not null,
   email text not null unique,
   profile text,
-  icon text
+  icon text,
+  sub text not null unique
 );
 
 create table if not exists public.post (
