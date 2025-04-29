@@ -91,11 +91,11 @@ public class ActivityPubServiceTest {
     
     Activity activity = (Activity) firstItem;
     assertEquals("Create", activity.getType());
-    assertTrue(activity.getId().startsWith(apiUrl + "/user/test_user/post/"));
+    assertTrue(activity.getId().startsWith(apiUrl + "/user/test_user/activity/"));
     
 
     Note note = activity.getObject();
-    assertTrue(note.getId().startsWith(apiUrl + "/user/test_user/note/"));
+    assertTrue(note.getId().startsWith(apiUrl + "/user/test_user/post/"));
     assertEquals("Note", note.getType());
     assertTrue(note.getContent() != null && !note.getContent().isEmpty());
   }

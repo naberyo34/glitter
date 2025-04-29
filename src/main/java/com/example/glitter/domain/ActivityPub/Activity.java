@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
 public class Activity {
-  @Schema(description = "アクティビティのID", example = "https://example.com/user/test_user/post/123", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(description = "アクティビティのID", example = "https://example.com/user/test_user/activity/123", requiredMode = Schema.RequiredMode.REQUIRED)
   private String id;
   
   @Schema(description = "アクティビティのタイプ", example = "Create", requiredMode = Schema.RequiredMode.REQUIRED)

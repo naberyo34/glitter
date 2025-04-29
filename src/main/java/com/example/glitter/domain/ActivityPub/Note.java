@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
 public class Note {
-  @Schema(description = "ノートのID", example = "https://example.com/user/test_user/note/123", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(description = "ノートのID", example = "https://example.com/user/test_user/post/123", requiredMode = Schema.RequiredMode.REQUIRED)
   private String id;
   
   @Schema(description = "ノートのタイプ", example = "Note", requiredMode = Schema.RequiredMode.REQUIRED)

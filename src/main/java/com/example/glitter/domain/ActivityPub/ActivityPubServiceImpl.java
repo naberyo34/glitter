@@ -141,8 +141,8 @@ public class ActivityPubServiceImpl implements ActivityPubService {
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     
     Actor actor = createActorFromUser(user);
-    String postUrl = apiUrl + "/user/" + user.getId() + "/post/" + post.getId();
-    String noteUrl = apiUrl + "/user/" + user.getId() + "/note/" + post.getId();
+    String activityUrl = apiUrl + "/user/" + user.getId() + "/activity/" + post.getId();
+    String noteUrl = apiUrl + "/user/" + user.getId() + "/post/" + post.getId();
     
     Note note = Note.builder()
         .id(noteUrl)
@@ -154,7 +154,7 @@ public class ActivityPubServiceImpl implements ActivityPubService {
         .build();
     
     return Activity.builder()
-        .id(postUrl)
+        .id(activityUrl)
         .type("Create")
         .actor(actor)
         .object(note)
