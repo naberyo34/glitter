@@ -31,9 +31,6 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
-rsa:
-  private-key: classpath:certs/private.pem
-  public-key: classpath:certs/public.pem
 env:
   api-url: ${API_URL}
   client-url: ${CLIENT_URL}
