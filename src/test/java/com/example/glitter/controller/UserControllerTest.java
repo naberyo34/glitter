@@ -99,6 +99,24 @@ public class UserControllerTest {
   }
 
   @Test
+  void ActivityPubとしてOutboxを取得したとき正しいOrderedCollectionJSONが返る() throws Exception {
+    mockMvc.perform(get("/user/test_user/outbox"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/activity+json"))
+        .andExpect(jsonPath("$.id").value(apiUrl + "/user/test_user/outbox"))
+        .andExpect(jsonPath("$.type").value("OrderedCollection"))
+        .andExpect(jsonPath("$.first").value(apiUrl + "/user/test_user/outbox"))
+        .andExpect(jsonPath("$.totalItems").isNumber())
+        .andExpect(jsonPath("$.orderedItems").isArray());
+  }
+
+  @Test
+  void 存在しないユーザーのOutboxを取得したとき404が返る() throws Exception {
+    mockMvc.perform(get("/user/not_exist_user/outbox"))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void 存在しないユーザーを取得したとき404が返る() throws Exception {
     mockMvc.perform(get("/user/not_exist_user")).andExpect(status().isNotFound());
   }
@@ -133,6 +151,7 @@ public class UserControllerTest {
     mockMvc.perform(get("/user/me")).andExpect(status().isOk());
   }
 
+  @Test
   void 非ログイン中にセッションユーザーを取得したとき401が返る() throws Exception {
     mockMvc.perform(get("/user/me")).andExpect(status().isUnauthorized());
   }

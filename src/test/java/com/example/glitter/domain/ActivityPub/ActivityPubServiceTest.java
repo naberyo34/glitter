@@ -69,4 +69,56 @@ public class ActivityPubServiceTest {
 
     assertTrue(actorOpt.isEmpty());
   }
+
+  @Test
+  void 存在するユーザーIDを渡すと正しいOutboxオブジェクトが返る() {
+    Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject("test_user");
+    
+    // outbox が存在する
+    assertTrue(outboxOpt.isPresent());
+    OrderedCollection outbox = outboxOpt.get();
+    
+    assertEquals(apiUrl + "/user/test_user/outbox", outbox.getId());
+    assertEquals("OrderedCollection", outbox.getType());
+    // シードデータには2件の投稿が含まれるため、2件のtotalItemsが含まれることを確認
+    assertTrue(outbox.getTotalItems() >= 2);
+    assertEquals(apiUrl + "/user/test_user/outbox", outbox.getFirst());
+    
+    // orderedItemsにActivityが含まれている
+    assertTrue(outbox.getOrderedItems() != null && !outbox.getOrderedItems().isEmpty());
+    Object firstItem = outbox.getOrderedItems().get(0);
+    assertTrue(firstItem instanceof Activity);
+    
+    Activity activity = (Activity) firstItem;
+    assertEquals("Create", activity.getType());
+    assertTrue(activity.getId().startsWith(apiUrl + "/user/test_user/post/"));
+    
+
+    Note note = activity.getObject();
+    assertTrue(note.getId().startsWith(apiUrl + "/user/test_user/note/"));
+    assertEquals("Note", note.getType());
+    assertTrue(note.getContent() != null && !note.getContent().isEmpty());
+  }
+  
+  @Test
+  void 投稿のないユーザーIDを渡すと空のOutboxオブジェクトが返る() {
+    Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject("test_user_2");
+    
+    assertTrue(outboxOpt.isPresent());
+    OrderedCollection outbox = outboxOpt.get();
+    
+    assertEquals(apiUrl + "/user/test_user_2/outbox", outbox.getId());
+    assertEquals("OrderedCollection", outbox.getType());
+    assertEquals(0, outbox.getTotalItems());
+    assertEquals(apiUrl + "/user/test_user_2/outbox", outbox.getFirst());
+    
+    assertTrue(outbox.getOrderedItems() == null || outbox.getOrderedItems().isEmpty());
+  }
+  
+  @Test
+  void 存在しないユーザーIDのOutboxを取得するとEmptyが返る() {
+    Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject("not_exist_user");
+    
+    assertTrue(outboxOpt.isEmpty());
+  }
 }

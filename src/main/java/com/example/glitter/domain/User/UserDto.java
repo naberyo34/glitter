@@ -35,6 +35,9 @@ public class UserDto {
   @Schema(description = "プロフィールアイコン", example = "/test_user/example.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private String icon;
 
+  @Schema(description = "Cognito の一意なユーザーID", example = "e7441ae8-a0a1-7062-2e61-571da628a8be", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String sub;
+
   public User toEntity() {
     User user = new User();
     user.setId(id);
@@ -42,6 +45,7 @@ public class UserDto {
     user.setEmail(email);
     user.setProfile(profile);
     user.setIcon(icon);
+    user.setSub(sub);
     return user;
   }
 
@@ -52,6 +56,7 @@ public class UserDto {
     userDto.setEmail(user.getEmail());
     userDto.setProfile(user.getProfile());
     userDto.setIcon(user.getIcon());
+    userDto.setSub(user.getSub());
     return userDto;
   }
 }

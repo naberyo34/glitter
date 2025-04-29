@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.glitter.domain.ActivityPub.ActivityPubService;
 import com.example.glitter.domain.ActivityPub.Actor;
+import com.example.glitter.domain.ActivityPub.OrderedCollection;
 import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.Post.PostService;
 import com.example.glitter.domain.User.UserIconService;
@@ -72,6 +73,22 @@ public class UserController {
       return ResponseEntity.ok(userService.findById(id)
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND)));
     }
+  }
+
+  @Operation(summary = "ユーザーのOutboxを取得", description = "ユーザーの投稿をActivityPubのOutbox形式で取得します。ActivityPub準拠のクライアントからのリクエスト用です。", responses = {
+      @ApiResponse(responseCode = "200", description = "OK", content = {
+          @Content(mediaType = "application/activity+json", schema = @Schema(implementation = OrderedCollection.class)),
+      }),
+      @ApiResponse(responseCode = "404", description = "ユーザーが見つからないとき", content = {
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+      }) })
+  @GetMapping("/{id}/outbox")
+  public ResponseEntity<OrderedCollection> getOutbox(@PathVariable String id) throws ErrorResponseException {
+    return activityPubService.getOutboxObject(id)
+        .map(outbox -> ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/activity+json"))
+            .body(outbox))
+        .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
   }
 
   @Operation(summary = "ユーザーの投稿を取得", description = "ユーザーの投稿を取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {

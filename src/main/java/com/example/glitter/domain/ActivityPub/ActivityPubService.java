@@ -13,4 +13,12 @@ public interface ActivityPubService {
    * @return Actorオブジェクト
    */
   Optional<Actor> getActorObject(String userId);
+
+  /**
+   * ユーザーIDからActivityPub Outbox オブジェクトを生成する
+   * 
+   * @param userId ユーザーID
+   * @return Outboxオブジェクト
+   */
+  Optional<OrderedCollection> getOutboxObject(String userId);
 }
