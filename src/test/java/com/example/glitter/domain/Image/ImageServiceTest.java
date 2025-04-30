@@ -26,6 +26,9 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+/**
+ * ストレージの操作ができることを確認するため 結合テストとして実施
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ImageServiceTest {
   @LocalServerPort

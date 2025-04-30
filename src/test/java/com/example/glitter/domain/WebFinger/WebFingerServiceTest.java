@@ -3,67 +3,54 @@ package com.example.glitter.domain.WebFinger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import com.example.glitter.domain.User.UserService;
+import com.example.glitter.domain.User.UserSummaryDto;
 import com.example.glitter.domain.WebFinger.WebFinger.Link;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(MockitoExtension.class)
 public class WebFingerServiceTest {
-  @LocalServerPort
-  private int port;
+  @Mock
+  private UserService userService;
 
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-      "postgres:16-alpine");
+  @InjectMocks
+  private WebFingerServiceImpl webFingerService;
 
-  @BeforeAll
-  static void beforeAll() {
-    postgres.start();
+  private final String TEST_API_URL = "https://api.example.com";
+  private final String TEST_DOMAIN = "example.com";
+  private final String TEST_USER_ID = "test_user";
+
+  @BeforeEach
+  void setUp() {
+    ReflectionTestUtils.setField(webFingerService, "apiUrl", TEST_API_URL);
+    ReflectionTestUtils.setField(webFingerService, "domain", TEST_DOMAIN);
   }
-
-  @AfterAll
-  static void afterAll() {
-    postgres.stop();
-  }
-
-  @DynamicPropertySource
-  static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.datasource.url", postgres::getJdbcUrl);
-    registry.add("spring.datasource.username", postgres::getUsername);
-    registry.add("spring.datasource.password", postgres::getPassword);
-  }
-
-  @Autowired
-  private WebFingerService webFingerService;
-
-  @Value("${env.api-url}")
-  private String apiUrl;
-
-  @Value("${env.domain}")
-  private String domain;
 
   @Test
   void 正しいリソースを渡すと適切なJRDが返る() {
-    String resource = "acct:test_user@" + domain;
+    String resource = "acct:" + TEST_USER_ID + "@" + TEST_DOMAIN;
+    UserSummaryDto mockUser = new UserSummaryDto();
+    mockUser.setId(TEST_USER_ID);
+    when(userService.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
+
     Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
-
     assertTrue(jrdOpt.isPresent());
-    WebFinger jrd = jrdOpt.get();
 
-    // 検証
+    WebFinger jrd = jrdOpt.get();
     assertEquals(resource, jrd.getSubject());
+
     List<Link> links = jrd.getLinks();
     assertNotNull(links);
     assertTrue(links.size() > 0);
@@ -71,22 +58,44 @@ public class WebFingerServiceTest {
     Link selfLink = links.get(0);
     assertEquals("self", selfLink.getRel());
     assertEquals("application/activity+json", selfLink.getType());
-    assertEquals(apiUrl + "/user/test_user", selfLink.getHref());
+    assertEquals(TEST_API_URL + "/user/" + TEST_USER_ID, selfLink.getHref());
   }
 
   @Test
   void 存在するユーザーだがドメイン名が誤っている場合Emptyが返る() {
-    String resource = "acct:test_user@" + "malicious.com";
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    String wrongDomain = "malicious.com";
+    String resource = "acct:" + TEST_USER_ID + "@" + wrongDomain;
 
+    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());
   }
 
   @Test
   void 存在しないユーザーのリソースを渡すとEmptyが返る() {
-    String resource = "acct:not_exist_user@" + domain;
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    String resource = "acct:not_exist_user@" + TEST_DOMAIN;
+    when(userService.findById("not_exist_user")).thenReturn(Optional.empty());
 
+    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    assertTrue(jrdOpt.isEmpty());
+  }
+
+  @Test
+  void nullリソースを渡すとEmptyが返る() {
+    Optional<WebFinger> jrdOpt = webFingerService.getJrd(null);
+    assertTrue(jrdOpt.isEmpty());
+  }
+
+  @Test
+  void 空文字リソースを渡すとEmptyが返る() {
+    Optional<WebFinger> jrdOpt = webFingerService.getJrd("");
+    assertTrue(jrdOpt.isEmpty());
+  }
+
+  @Test
+  void 不正な形式のリソースを渡すとEmptyが返る() {
+    String resource = TEST_USER_ID + "@" + TEST_DOMAIN;
+
+    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());
   }
 }

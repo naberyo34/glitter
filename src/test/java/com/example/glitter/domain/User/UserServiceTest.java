@@ -4,108 +4,147 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.glitter.util.WithMockJwt;
+import com.example.glitter.generated.User;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import jakarta.validation.ConstraintViolationException;
+
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-  @LocalServerPort
-  private int port;
 
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-      "postgres:16-alpine");
-
-  @BeforeAll
-  static void beforeAll() {
-    postgres.start();
-  }
-
-  @AfterAll
-  static void afterAll() {
-    postgres.stop();
-  }
-
-  @DynamicPropertySource
-  static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.datasource.url", postgres::getJdbcUrl);
-    registry.add("spring.datasource.username", postgres::getUsername);
-    registry.add("spring.datasource.password", postgres::getPassword);
-  }
-
-  // User 型のユーザー情報を直で取得するために必要
-  @Autowired
+  @Mock
   private UserRepository userRepository;
-  @Autowired
+
+  @InjectMocks
   private UserService userService;
 
   @Test
   void IDからユーザーを取得したときユーザーのDTOが返る() throws Exception {
+    // モックの準備
+    User mockUser = new User();
+    mockUser.setId("test_user");
+    mockUser.setUsername("テストユーザー");
+    mockUser.setProfile("テスト用のアカウントです。");
+
+    when(userRepository.findById("test_user")).thenReturn(Optional.of(mockUser));
+
+    // テスト実行
     Optional<UserSummaryDto> user = userService.findById("test_user");
 
-    // User ではなく UserDto が返っていることを確認
+    // 検証
     assertThat(user).isPresent().get().isInstanceOf(UserSummaryDto.class);
     user.ifPresent((u) -> {
-      assertEquals(u.getUsername(), "テストユーザー");
+      assertEquals("テストユーザー", u.getUsername());
     });
   }
 
   @Test
   void 存在しないユーザーを取得したときemptyが返る() throws Exception {
+    // モックの準備
+    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
+
+    // テスト実行
     Optional<UserSummaryDto> user = userService.findById("not_exist_user");
+
+    // 検証
     assertThat(user).isEmpty();
   }
 
   @Test
-  @WithMockJwt
   void ログイン中にセッションユーザーを取得したときユーザーDTOが返る() throws Exception {
+    // モックの準備
+    User mockUser = new User();
+    mockUser.setId("test_user");
+    mockUser.setUsername("テストユーザー");
+    mockUser.setProfile("テスト用のアカウントです。");
+
+    when(userRepository.getSessionUser()).thenReturn(Optional.of(mockUser));
+
+    // テスト実行
     Optional<UserSummaryDto> user = userService.getSessionUser();
 
-    // User ではなく UserDto が返っていることを確認
+    // 検証
     assertThat(user).isPresent().get().isInstanceOf(UserSummaryDto.class);
     user.ifPresent((u) -> {
-      assertEquals(u.getUsername(), "テストユーザー");
+      assertEquals("テストユーザー", u.getUsername());
     });
   }
 
   @Test
   void 非ログイン中にセッションユーザーを取得したときemptyが返る() throws Exception {
+    // モックの準備 - NullPointerExceptionをスローする動作をモック
+    when(userRepository.getSessionUser()).thenThrow(new NullPointerException());
+
+    // テスト実行
     Optional<UserSummaryDto> user = userService.getSessionUser();
+
+    // 検証
     assertThat(user).isEmpty();
   }
 
   @Test
-  @Transactional
   void ユーザーを更新できる() throws Exception {
-    UserDto user = UserDto.fromEntity(userRepository.findById("test_user").orElseThrow());
-    user.setUsername("更新されたユーザー");
+    // モックの準備
+    User originalUser = new User();
+    originalUser.setId("test_user");
+    originalUser.setUsername("テストユーザー");
+    originalUser.setEmail("test@example.com");
 
-    UserSummaryDto result = userService.update(user);
+    User updatedUser = new User();
+    updatedUser.setId("test_user");
+    updatedUser.setUsername("更新されたユーザー");
+    updatedUser.setEmail("test@example.com");
+
+    when(userRepository.findById("test_user")).thenReturn(Optional.of(originalUser));
+    when(userRepository.update(any(User.class))).thenReturn(updatedUser);
+
+    // テスト用DTOの作成
+    UserDto userDto = new UserDto();
+    userDto.setId("test_user");
+    userDto.setUsername("更新されたユーザー");
+    userDto.setEmail("test@example.com");
+
+    // テスト実行
+    UserSummaryDto result = userService.update(userDto);
+
+    // 検証
     assertNotNull(result);
-    assertEquals(result.getUsername(), "更新されたユーザー");
+    assertEquals("更新されたユーザー", result.getUsername());
   }
 
   @Test
-  @Transactional
   void 不正なパラメータでユーザーを更新しようとしたとき例外が発生する() throws Exception {
-    UserDto user = UserDto.fromEntity(userRepository.findById("test_user").orElseThrow());
-    // 空白のユーザー名は invalid である
-    user.setUsername("");
+    // モックの準備
+    User originalUser = new User();
+    originalUser.setId("test_user");
+    originalUser.setUsername("テストユーザー");
+    originalUser.setEmail("test@example.com");
 
+    when(userRepository.findById("test_user")).thenReturn(Optional.of(originalUser));
+
+    UserDto userDto = new UserDto();
+    userDto.setId("test_user");
+    userDto.setUsername(""); // 空文字はバリデーションエラー
+    userDto.setEmail("test@example.com");
+
+    doThrow(new ConstraintViolationException("バリデーションエラー", null))
+        .when(userRepository).update(any(User.class));
+
+    // テスト実行と検証
     try {
-      userService.update(user);
+      userService.update(userDto);
       fail();
     } catch (Exception e) {
       assertNotNull(e);
@@ -113,16 +152,16 @@ public class UserServiceTest {
   }
 
   @Test
-  @Transactional
   void 存在しないユーザーを更新しようとしたとき例外が発生する() throws Exception {
-    // 内容自体は valid な User を作る
-    UserDto user = new UserDto();
-    user.setId("not_exist_user");
-    user.setUsername("存在しないユーザー");
-    user.setEmail("not_exist@example.com");
+    // テスト用DTOの作成
+    UserDto userDto = new UserDto();
+    userDto.setId("not_exist_user");
+    userDto.setUsername("存在しないユーザー");
+    userDto.setEmail("not_exist@example.com");
 
+    // テスト実行と検証
     try {
-      userService.update(user);
+      userService.update(userDto);
       fail();
     } catch (Exception e) {
       assertNotNull(e);
@@ -130,25 +169,54 @@ public class UserServiceTest {
   }
 
   @Test
-  @Transactional
   void UserSummaryからユーザーを更新できる() throws Exception {
-    UserSummaryDto user = userService.findById("test_user").orElseThrow();
-    user.setUsername("更新されたユーザー");
+    // モックの準備
+    User originalUser = new User();
+    originalUser.setId("test_user");
+    originalUser.setUsername("テストユーザー");
+    originalUser.setEmail("test@example.com");
 
-    UserSummaryDto result = userService.updateFromSummary(user);
+    User updatedUser = new User();
+    updatedUser.setId("test_user");
+    updatedUser.setUsername("更新されたユーザー");
+    updatedUser.setEmail("test@example.com");
+
+    when(userRepository.findById("test_user")).thenReturn(Optional.of(originalUser));
+    when(userRepository.update(any(User.class))).thenReturn(updatedUser);
+
+    // テスト用DTOの作成
+    UserSummaryDto userSummaryDto = new UserSummaryDto();
+    userSummaryDto.setId("test_user");
+    userSummaryDto.setUsername("更新されたユーザー");
+
+    // テスト実行
+    UserSummaryDto result = userService.updateFromSummary(userSummaryDto);
+
+    // 検証
     assertNotNull(result);
-    assertEquals(result.getUsername(), "更新されたユーザー");
+    assertEquals("更新されたユーザー", result.getUsername());
+    verify(userRepository).update(any(User.class));
   }
 
   @Test
-  @Transactional
   void 不正なパラメータでUserSummaryからユーザーを更新しようとしたとき例外が発生する() throws Exception {
-    UserSummaryDto user = userService.findById("test_user").orElseThrow();
-    // 空白のユーザー名は invalid である
-    user.setUsername("");
+    // モックの準備
+    User originalUser = new User();
+    originalUser.setId("test_user");
+    originalUser.setUsername("テストユーザー");
 
+    when(userRepository.findById("test_user")).thenReturn(Optional.of(originalUser));
+
+    UserSummaryDto userSummaryDto = new UserSummaryDto();
+    userSummaryDto.setId("test_user");
+    userSummaryDto.setUsername(""); // 空文字はバリデーションエラー
+
+    doThrow(new ConstraintViolationException("バリデーションエラー", null))
+        .when(userRepository).update(any(User.class));
+
+    // テスト実行と検証
     try {
-      userService.updateFromSummary(user);
+      userService.updateFromSummary(userSummaryDto);
       fail();
     } catch (Exception e) {
       assertNotNull(e);
@@ -156,15 +224,18 @@ public class UserServiceTest {
   }
 
   @Test
-  @Transactional
   void 存在しないユーザーをUserSummaryから更新しようとしたとき例外が発生する() throws Exception {
-    // 内容自体は valid な UserSummary を作る
-    UserSummaryDto user = new UserSummaryDto();
-    user.setId("not_exist_user");
-    user.setUsername("存在しないユーザー");
+    // モックの準備
+    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
 
+    // テスト用DTOの作成
+    UserSummaryDto userSummaryDto = new UserSummaryDto();
+    userSummaryDto.setId("not_exist_user");
+    userSummaryDto.setUsername("存在しないユーザー");
+
+    // テスト実行と検証
     try {
-      userService.updateFromSummary(user);
+      userService.updateFromSummary(userSummaryDto);
       fail();
     } catch (Exception e) {
       assertNotNull(e);

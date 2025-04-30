@@ -9,6 +9,7 @@ import com.example.glitter.generated.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class PostResponseDto {
   @Schema(description = "投稿 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
   private Long id;

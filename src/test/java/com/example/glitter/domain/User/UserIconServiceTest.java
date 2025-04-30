@@ -23,6 +23,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.util.WithMockJwt;
 
+/**
+ * ストレージの操作ができることを確認するため 結合テストとして実施
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserIconServiceTest {
   @LocalServerPort

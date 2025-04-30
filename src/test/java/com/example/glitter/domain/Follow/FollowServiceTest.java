@@ -21,6 +21,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import com.example.glitter.domain.User.UserSummaryDto;
 import com.example.glitter.util.WithMockJwt;
 
+/**
+ * 単体テストだとモック定義が冗長になり効果が薄いため、結合テストを実施
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class FollowServiceTest {
 
