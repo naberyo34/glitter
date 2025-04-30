@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.glitter.domain.Follow.FollowDto;
-import com.example.glitter.domain.Follow.FollowService;
 import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.service.FollowService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

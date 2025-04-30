@@ -1,4 +1,4 @@
-package com.example.glitter.domain.User;
+package com.example.glitter.service;
 
 import java.util.Optional;
 
@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import com.example.glitter.domain.User.UserDto;
+import com.example.glitter.domain.User.UserRepository;
+import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.User;
 
 import jakarta.validation.Valid;

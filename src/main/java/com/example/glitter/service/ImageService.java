@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Image;
+package com.example.glitter.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

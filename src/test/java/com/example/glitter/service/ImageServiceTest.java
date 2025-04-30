@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Image;
+package com.example.glitter.service;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;

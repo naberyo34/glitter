@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Follow;
+package com.example.glitter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +18,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import com.example.glitter.domain.Follow.FollowDto;
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.util.WithMockJwt;
 

@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Post;
+package com.example.glitter.service;
 
 import java.util.Date;
 import java.util.List;
@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import com.example.glitter.domain.Post.PostDto;
+import com.example.glitter.domain.Post.PostParamsDto;
+import com.example.glitter.domain.Post.PostRepository;
+import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;

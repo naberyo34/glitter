@@ -1,4 +1,4 @@
-package com.example.glitter.domain.ActivityPub;
+package com.example.glitter.service;
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.glitter.domain.ActivityPub.Activity;
+import com.example.glitter.domain.ActivityPub.ActivityPubObject;
+import com.example.glitter.domain.ActivityPub.Actor;
+import com.example.glitter.domain.ActivityPub.Note;
+import com.example.glitter.domain.ActivityPub.OrderedCollection;
 import com.example.glitter.domain.Post.PostResponseDto;
-import com.example.glitter.domain.Post.PostService;
-import com.example.glitter.domain.User.UserService;
 import com.example.glitter.domain.User.UserResponse;
 
 /**

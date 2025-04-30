@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.glitter.domain.WebFinger.WebFingerResponse;
-import com.example.glitter.domain.WebFinger.WebFingerService;
+import com.example.glitter.service.WebFingerService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

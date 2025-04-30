@@ -1,4 +1,4 @@
-package com.example.glitter.domain.ActivityPub;
+package com.example.glitter.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,9 +18,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.example.glitter.domain.ActivityPub.Activity;
+import com.example.glitter.domain.ActivityPub.ActivityPubObject;
+import com.example.glitter.domain.ActivityPub.Actor;
+import com.example.glitter.domain.ActivityPub.Note;
+import com.example.glitter.domain.ActivityPub.OrderedCollection;
 import com.example.glitter.domain.Post.PostResponseDto;
-import com.example.glitter.domain.Post.PostService;
-import com.example.glitter.domain.User.UserService;
 import com.example.glitter.domain.User.UserResponse;
 
 @ExtendWith(MockitoExtension.class)

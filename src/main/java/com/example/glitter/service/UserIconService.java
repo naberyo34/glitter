@@ -1,4 +1,4 @@
-package com.example.glitter.domain.User;
+package com.example.glitter.service;
 
 import java.util.UUID;
 
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.glitter.domain.Image.ImageService;
+import com.example.glitter.domain.User.UserResponse;
 
 @Service
 public class UserIconService {

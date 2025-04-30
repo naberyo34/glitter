@@ -1,3 +1,3 @@
 # domain
 
-各ドメインに対応する `Repository` 、必要なら `Dto` や `Service` を配置します。
+各ドメインに対応する `Repository` 、必要なら `Dto` やデータクラスを配置します。

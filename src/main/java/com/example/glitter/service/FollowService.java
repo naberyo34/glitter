@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Follow;
+package com.example.glitter.service;
 
 import java.util.Date;
 import java.util.List;
@@ -11,8 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import com.example.glitter.domain.Follow.FollowDto;
+import com.example.glitter.domain.Follow.FollowRepository;
 import com.example.glitter.domain.User.UserRepository;
-import com.example.glitter.domain.User.UserService;
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.User;

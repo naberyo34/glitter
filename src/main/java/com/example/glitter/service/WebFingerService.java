@@ -1,4 +1,4 @@
-package com.example.glitter.domain.WebFinger;
+package com.example.glitter.service;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.glitter.domain.User.UserService;
+import com.example.glitter.domain.WebFinger.WebFingerResponse;
 import com.example.glitter.domain.WebFinger.WebFingerResponse.Link;
 
 @Service

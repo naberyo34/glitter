@@ -1,4 +1,4 @@
-package com.example.glitter.domain.User;
+package com.example.glitter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -17,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.glitter.domain.User.UserDto;
+import com.example.glitter.domain.User.UserRepository;
+import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.User;
 
 import jakarta.validation.ConstraintViolationException;

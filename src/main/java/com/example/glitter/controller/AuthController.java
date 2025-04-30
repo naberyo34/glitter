@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.glitter.domain.Auth.AuthService;
 import com.example.glitter.domain.Auth.JwtTokenDto;
 import com.example.glitter.domain.Auth.UserIdentity;
+import com.example.glitter.service.CognitoService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RequestMapping("/auth")
 public class AuthController {
   @Autowired
-  private AuthService authService;
+  private CognitoService cognitoService;
 
   @Operation(summary = "ログイン JWT トークンの取得", description = "ユーザー ID とパスワードを照合し、ログインに成功した場合は JWT トークンを返却します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -34,7 +34,7 @@ public class AuthController {
   })
   @PostMapping("/login")
   public JwtTokenDto token(@RequestBody UserIdentity identity) throws ErrorResponseException {
-    return authService.login(identity)
+    return cognitoService.login(identity)
         .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
   }
 }

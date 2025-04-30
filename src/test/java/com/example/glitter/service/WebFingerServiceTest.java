@@ -1,4 +1,4 @@
-package com.example.glitter.domain.WebFinger;
+package com.example.glitter.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,8 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.example.glitter.domain.User.UserService;
 import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.WebFinger.WebFingerResponse;
 import com.example.glitter.domain.WebFinger.WebFingerResponse.Link;
 
 @ExtendWith(MockitoExtension.class)

@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import com.example.glitter.service.UserIconService;
 import com.example.glitter.util.WithMockJwt;
 
 /**

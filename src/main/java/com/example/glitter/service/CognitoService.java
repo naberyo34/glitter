@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Auth;
+package com.example.glitter.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -11,6 +11,9 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.example.glitter.domain.Auth.JwtTokenDto;
+import com.example.glitter.domain.Auth.UserIdentity;
 
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest;
@@ -26,32 +29,6 @@ public class CognitoService {
 
   @Value("${env.cognito-client-secret}")
   private String clientSecret;
-
-  /**
-   * SECRET_HASH を生成する
-   * 
-   * @see https://docs.aws.amazon.com/cognito/latest/developerguide/signing-up-users-in-your-app.html#cognito-user-pools-computing-secret-hash
-   * @param userPoolClientId
-   * @param userPoolClientSecret
-   * @param userName
-   * @return
-   */
-  private String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
-    final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
-
-    SecretKeySpec signingKey = new SecretKeySpec(
-        userPoolClientSecret.getBytes(StandardCharsets.UTF_8),
-        HMAC_SHA256_ALGORITHM);
-    try {
-      Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
-      mac.init(signingKey);
-      mac.update(userName.getBytes(StandardCharsets.UTF_8));
-      byte[] rawHmac = mac.doFinal(userPoolClientId.getBytes(StandardCharsets.UTF_8));
-      return Base64.getEncoder().encodeToString(rawHmac);
-    } catch (Exception e) {
-      throw new RuntimeException("Error while calculating ");
-    }
-  }
 
   /**
    * AWS Cognito でログインを行う
@@ -76,6 +53,32 @@ public class CognitoService {
           .build());
     } catch (Exception e) {
       throw e;
+    }
+  }
+
+  /**
+   * SECRET_HASH を生成する
+   * 
+   * @see https://docs.aws.amazon.com/cognito/latest/developerguide/signing-up-users-in-your-app.html#cognito-user-pools-computing-secret-hash
+   * @param userPoolClientId
+   * @param userPoolClientSecret
+   * @param userName
+   * @return
+   */
+  private String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
+    final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
+
+    SecretKeySpec signingKey = new SecretKeySpec(
+        userPoolClientSecret.getBytes(StandardCharsets.UTF_8),
+        HMAC_SHA256_ALGORITHM);
+    try {
+      Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
+      mac.init(signingKey);
+      mac.update(userName.getBytes(StandardCharsets.UTF_8));
+      byte[] rawHmac = mac.doFinal(userPoolClientId.getBytes(StandardCharsets.UTF_8));
+      return Base64.getEncoder().encodeToString(rawHmac);
+    } catch (Exception e) {
+      throw new RuntimeException("Error while calculating ");
     }
   }
 }

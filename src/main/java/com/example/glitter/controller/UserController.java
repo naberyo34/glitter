@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.glitter.domain.ActivityPub.ActivityPubService;
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
 import com.example.glitter.domain.Post.PostResponseDto;
-import com.example.glitter.domain.Post.PostService;
-import com.example.glitter.domain.User.UserIconService;
-import com.example.glitter.domain.User.UserService;
 import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.service.ActivityPubService;
+import com.example.glitter.service.PostService;
+import com.example.glitter.service.UserIconService;
+import com.example.glitter.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

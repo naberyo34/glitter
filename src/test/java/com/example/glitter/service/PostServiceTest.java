@@ -1,4 +1,4 @@
-package com.example.glitter.domain.Post;
+package com.example.glitter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.glitter.domain.Post.PostDto;
+import com.example.glitter.domain.Post.PostParamsDto;
+import com.example.glitter.domain.Post.PostRepository;
+import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
