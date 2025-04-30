@@ -18,3 +18,12 @@ create table if not exists public.post (
   content text,
   created_at timestamp not null default current_timestamp
 );
+
+create table follow (
+  follower_id text not null,
+  followee_id text not null,
+  timestamp timestamp not null default current_timestamp,
+  primary key (follower_id, followee_id),
+  foreign key (follower_id) references "user" (id),
+  foreign key (followee_id) references "user" (id)
+);

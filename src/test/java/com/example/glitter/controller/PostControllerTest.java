@@ -1,6 +1,7 @@
 package com.example.glitter.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -18,8 +20,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequestDto;
+import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,7 +56,38 @@ public class PostControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
+  @Value("${env.api-url}")
+  private String apiUrl;
+
   private ObjectMapper objectMapper = new ObjectMapper();
+
+  @Test
+  void IDから投稿を取得できる() throws Exception {
+    mockMvc.perform(get("/post/1"))
+        .andExpect(status().isOk()).andExpect(result -> {
+          String content = result.getResponse().getContentAsString();
+          PostResponseDto resultPostResponseDto = objectMapper.readValue(content, PostResponseDto.class);
+          assertEquals(resultPostResponseDto.getId(), 1L);
+        });
+  }
+
+  @Test
+  void ActivityPubとして投稿を取得したとき正しいNoteJSONが返る() throws Exception {
+    mockMvc.perform(get("/post/1")
+        .accept(MediaType.parseMediaType("application/activity+json")))
+        .andExpect(status().isOk()).andExpect(result -> {
+          String content = result.getResponse().getContentAsString();
+          Note resultPostDto = objectMapper.readValue(content, Note.class);
+          assertEquals(resultPostDto.getId(), apiUrl + "/post/1");
+          assertEquals(resultPostDto.getType(), "Note");
+        });
+  }
+
+  @Test
+  void IDから投稿が見つからないとき404が返る() throws Exception {
+    mockMvc.perform(get("/post/9999"))
+        .andExpect(status().isNotFound());
+  }
 
   @Test
   @Transactional

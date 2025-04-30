@@ -91,7 +91,7 @@ public class UserController {
         .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
   }
 
-  @Operation(summary = "ユーザーの投稿を取得", description = "ユーザーの投稿を取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {
+  @Operation(summary = "ユーザーの投稿を全件取得", description = "ユーザーの投稿を全件取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
           @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))),
       }),

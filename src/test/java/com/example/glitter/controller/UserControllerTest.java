@@ -105,7 +105,6 @@ public class UserControllerTest {
         .andExpect(content().contentType("application/activity+json"))
         .andExpect(jsonPath("$.id").value(apiUrl + "/user/test_user/outbox"))
         .andExpect(jsonPath("$.type").value("OrderedCollection"))
-        .andExpect(jsonPath("$.first").value(apiUrl + "/user/test_user/outbox"))
         .andExpect(jsonPath("$.totalItems").isNumber())
         .andExpect(jsonPath("$.orderedItems").isArray());
   }

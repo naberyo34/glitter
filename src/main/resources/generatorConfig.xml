@@ -14,5 +14,6 @@
     <table schema="public" tableName="post">
       <generatedKey column="id" sqlStatement="JDBC" />
     </table>
+    <table schema="public" tableName="follow" />
   </context>
 </generatorConfiguration>

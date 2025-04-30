@@ -7,7 +7,7 @@ import java.util.Optional;
  */
 public interface ActivityPubService {
   /**
-   * ユーザーIDからActivityPub Actor オブジェクトを生成する
+   * ユーザー ID から ActivityPub Actor オブジェクトを取得する
    * 
    * @param userId ユーザーID
    * @return Actorオブジェクト
@@ -15,7 +15,24 @@ public interface ActivityPubService {
   Optional<Actor> getActorObject(String userId);
 
   /**
-   * ユーザーIDからActivityPub Outbox オブジェクトを生成する
+   * 投稿 ID から ActivityPub Note オブジェクトを取得する
+   * 
+   * @param postId
+   * @return
+   */
+  Optional<Note> getNoteObject(Long postId);
+
+  /**
+   * 投稿 ID から ActivityPub Activity オブジェクトを取得する
+   * TODO: これは仮置きです
+   * 
+   * @param postId
+   * @return
+   */
+  Optional<Activity> getActivityFromPost(Long postId);
+
+  /**
+   * ユーザー ID から ActivityPub Outbox オブジェクトを取得する
    * 
    * @param userId ユーザーID
    * @return Outboxオブジェクト

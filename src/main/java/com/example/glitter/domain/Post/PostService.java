@@ -24,7 +24,23 @@ public class PostService {
   UserRepository userRepository;
 
   /**
-   * ユーザー ID に紐づく投稿を取得する
+   * ID からユーザー情報付きの投稿を取得する
+   * 
+   * @param id
+   * @return 投稿の DTO
+   */
+  public Optional<PostResponseDto> findById(Long id) {
+    Optional<Post> postOpt = postRepository.findById(id);
+    if (postOpt.isEmpty()) {
+      return Optional.empty();
+    }
+    Post post = postOpt.get();
+    User user = userRepository.findById(post.getUserId()).orElseThrow();
+    return Optional.of(PostResponseDto.fromEntity(post, user));
+  }
+
+  /**
+   * ユーザー ID からユーザー情報付きの投稿を取得する
    * 
    * @param userId
    * @return 投稿のリスト

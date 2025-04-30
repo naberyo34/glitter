@@ -47,6 +47,18 @@ public class PostServiceTest {
   private PostService postService;
 
   @Test
+  void IDから投稿を取得できる() throws Exception {
+    Optional<PostResponseDto> post = postService.findById(1L);
+    assertThat(post).isPresent();
+  }
+
+  @Test
+  void 存在しないIDの投稿を取得したとき空のOptionalが返る() throws Exception {
+    Optional<PostResponseDto> post = postService.findById(9999L);
+    assertThat(post).isNotPresent();
+  }
+
+  @Test
   void ユーザーに紐づく投稿を取得できる() throws Exception {
     List<PostResponseDto> posts = postService.getPostsByUserId("test_user");
     assertThat(posts).isNotEmpty();
