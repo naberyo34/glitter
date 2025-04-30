@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.glitter.domain.Follow.FollowDto;
 import com.example.glitter.domain.User.UserResponse;
-import com.example.glitter.service.FollowService;
+import com.example.glitter.service.FollowUserListService;
+import com.example.glitter.service.SessionUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -25,9 +26,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
 public class FollowController {
-
   @Autowired
-  private FollowService followService;
+  private SessionUserService sessionUserService;
+  @Autowired
+  private FollowUserListService followUserListService;
 
   @Operation(summary = "ユーザーをフォローする", description = "指定したユーザーをフォローします。ログインが必須です。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -47,7 +49,7 @@ public class FollowController {
   @PreAuthorize("isAuthenticated()")
   public FollowDto follow(@PathVariable String id) throws ErrorResponseException {
     try {
-      return followService.follow(id);
+      return sessionUserService.follow(id);
     } catch (IllegalArgumentException e) {
       throw new ErrorResponseException(HttpStatus.NOT_FOUND, e);
     } catch (Exception e) {
@@ -68,7 +70,7 @@ public class FollowController {
   @PreAuthorize("isAuthenticated()")
   public void unfollow(@PathVariable String id) throws ErrorResponseException {
     try {
-      boolean success = followService.unfollow(id);
+      boolean success = sessionUserService.unfollow(id);
       if (!success) {
         throw new ErrorResponseException(HttpStatus.NOT_FOUND);
       }
@@ -91,7 +93,7 @@ public class FollowController {
   @GetMapping("/user/{id}/following")
   public List<UserResponse> getFollowing(@PathVariable String id) throws ErrorResponseException {
     try {
-      return followService.getFollowing(id);
+      return followUserListService.getFollowing(id);
     } catch (IllegalArgumentException e) {
       throw new ErrorResponseException(HttpStatus.NOT_FOUND, e);
     } catch (Exception e) {
@@ -110,7 +112,7 @@ public class FollowController {
   @GetMapping("/user/{id}/followers")
   public List<UserResponse> getFollowers(@PathVariable String id) throws ErrorResponseException {
     try {
-      return followService.getFollowers(id);
+      return followUserListService.getFollowers(id);
     } catch (IllegalArgumentException e) {
       throw new ErrorResponseException(HttpStatus.NOT_FOUND, e);
     } catch (Exception e) {
@@ -130,7 +132,7 @@ public class FollowController {
   @PreAuthorize("isAuthenticated()")
   public List<UserResponse> getMyFollowing() throws ErrorResponseException {
     try {
-      return followService.getMyFollowing();
+      return sessionUserService.getFollowing();
     } catch (Exception e) {
       throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, e);
     }
@@ -148,7 +150,7 @@ public class FollowController {
   @PreAuthorize("isAuthenticated()")
   public List<UserResponse> getMyFollowers() throws ErrorResponseException {
     try {
-      return followService.getMyFollowers();
+      return sessionUserService.getFollowers();
     } catch (Exception e) {
       throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, e);
     }

@@ -9,13 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.WebFinger.WebFingerResponse;
 import com.example.glitter.domain.WebFinger.WebFingerResponse.Link;
 
 @Service
 public class WebFingerService {
   @Autowired
-  private UserService userService;
+  private UserRepository userRepository;
 
   @Value("${env.api-url}")
   private String apiUrl;
@@ -52,7 +53,7 @@ public class WebFingerService {
     }
 
     // ユーザーの存在確認
-    return userService.findById(userId).map(_ -> {
+    return userRepository.findById(userId).map(_ -> {
       // JRD (JSON Resource Descriptor) を構築
       Link link = Link.builder()
           .rel("self")

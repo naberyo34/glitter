@@ -23,18 +23,17 @@ import com.example.glitter.domain.ActivityPub.ActivityPubObject;
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
-import com.example.glitter.domain.Post.PostResponseDto;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.Post.PostRepository;
+import com.example.glitter.domain.User.UserRepository;
+import com.example.glitter.generated.Post;
+import com.example.glitter.generated.User;
 
 @ExtendWith(MockitoExtension.class)
 public class ActivityPubServiceTest {
-
   @Mock
-  private UserService userService;
-
+  private UserRepository userRepository;
   @Mock
-  private PostService postService;
-
+  private PostRepository postRepository;
   @InjectMocks
   private ActivityPubService activityPubService;
 
@@ -44,7 +43,7 @@ public class ActivityPubServiceTest {
   private final String TEST_USER_ID = "test_user";
   private final String TEST_USER_NAME = "テストユーザー";
   private final String TEST_USER_PROFILE = "テスト用のアカウントです。";
-  private final String TEST_USER_ICON = "user/test_user/icon.jpg";
+  private final String TEST_USER_ICON = "test_user/icon.jpg";
 
   @BeforeEach
   void setUp() {
@@ -56,14 +55,13 @@ public class ActivityPubServiceTest {
   @Test
   void 存在するユーザーIDを渡すと正しいActorオブジェクトが返る() {
     // モックの準備
-    UserResponse mockUser = UserResponse.builder()
-        .id(TEST_USER_ID)
-        .username(TEST_USER_NAME)
-        .profile(TEST_USER_PROFILE)
-        .icon(TEST_USER_ICON)
-        .build();
+    User mockUser = new User();
+    mockUser.setId(TEST_USER_ID);
+    mockUser.setUsername(TEST_USER_NAME);
+    mockUser.setProfile(TEST_USER_PROFILE);
+    mockUser.setIcon(TEST_USER_ICON);
 
-    when(userService.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
+    when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
 
     // テスト実行
     Optional<Actor> actorOpt = activityPubService.getActorObject(TEST_USER_ID);
@@ -84,7 +82,7 @@ public class ActivityPubServiceTest {
 
   @Test
   void 存在しないユーザーIDを渡すとEmptyが返る() {
-    when(userService.findById("not_exist_user")).thenReturn(Optional.empty());
+    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
 
     Optional<Actor> actorOpt = activityPubService.getActorObject("not_exist_user");
 
@@ -94,19 +92,13 @@ public class ActivityPubServiceTest {
   @Test
   void 存在する投稿IDを渡すと正しいNoteオブジェクトが返る() {
     // モックの準備
-    UserResponse mockUser = UserResponse.builder()
-        .id(TEST_USER_ID)
-        .username(TEST_USER_NAME)
-        .build();
+    Post mockPost = new Post();
+    mockPost.setId(1L);
+    mockPost.setContent("テスト投稿");
+    mockPost.setCreatedAt(new Date());
+    mockPost.setUserId(TEST_USER_ID);
 
-    PostResponseDto mockPost = PostResponseDto.builder()
-        .id(1L)
-        .content("テスト投稿")
-        .createdAt(new Date())
-        .user(mockUser)
-        .build();
-
-    when(postService.findById(1L)).thenReturn(Optional.of(mockPost));
+    when(postRepository.findById(1L)).thenReturn(Optional.of(mockPost));
 
     // テスト実行
     Optional<Note> noteOpt = activityPubService.getNoteObject(1L);
@@ -122,7 +114,7 @@ public class ActivityPubServiceTest {
 
   @Test
   void 存在しない投稿IDを渡すとEmptyが返る() {
-    when(postService.findById(999L)).thenReturn(Optional.empty());
+    when(postRepository.findById(999L)).thenReturn(Optional.empty());
 
     Optional<Note> noteOpt = activityPubService.getNoteObject(999L);
     assertTrue(noteOpt.isEmpty());
@@ -131,19 +123,18 @@ public class ActivityPubServiceTest {
   @Test
   void 存在する投稿IDを渡すと正しいActivityオブジェクトが返る() {
     // モックの準備
-    UserResponse mockUser = UserResponse.builder()
-        .id(TEST_USER_ID)
-        .username(TEST_USER_NAME)
-        .build();
+    Post mockPost = new Post();
+    mockPost.setId(1L);
+    mockPost.setContent("テスト投稿");
+    mockPost.setCreatedAt(new Date());
+    mockPost.setUserId(TEST_USER_ID);
 
-    PostResponseDto mockPost = PostResponseDto.builder()
-        .id(1L)
-        .content("テスト投稿")
-        .createdAt(new Date())
-        .user(mockUser)
-        .build();
+    User mockUser = new User();
+    mockUser.setId(TEST_USER_ID);
+    mockUser.setUsername(TEST_USER_NAME);
 
-    when(postService.findById(1L)).thenReturn(Optional.of(mockPost));
+    when(postRepository.findById(1L)).thenReturn(Optional.of(mockPost));
+    when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
 
     // テスト実行
     Optional<Activity> activityOpt = activityPubService.getActivityFromPost(1L);
@@ -165,29 +156,26 @@ public class ActivityPubServiceTest {
   @Test
   void 存在するユーザーIDを渡すと正しいOutboxオブジェクトが返る() {
     // モックの準備
-    UserResponse mockUser = UserResponse.builder()
-        .id(TEST_USER_ID)
-        .username(TEST_USER_NAME)
-        .build();
+    User mockUser = new User();
+    mockUser.setId(TEST_USER_ID);
+    mockUser.setUsername(TEST_USER_NAME);
 
-    PostResponseDto mockPost1 = PostResponseDto.builder()
-        .id(1L)
-        .content("テスト投稿1")
-        .createdAt(new Date())
-        .user(mockUser)
-        .build();
+    Post mockPost1 = new Post();
+    mockPost1.setId(1L);
+    mockPost1.setContent("テスト投稿1");
+    mockPost1.setCreatedAt(new Date());
+    mockPost1.setUserId(TEST_USER_ID);
 
-    PostResponseDto mockPost2 = PostResponseDto.builder()
-        .id(2L)
-        .content("テスト投稿2")
-        .createdAt(new Date())
-        .user(mockUser)
-        .build();
+    Post mockPost2 = new Post();
+    mockPost2.setId(2L);
+    mockPost2.setContent("テスト投稿2");
+    mockPost2.setCreatedAt(new Date());
+    mockPost2.setUserId(TEST_USER_ID);
 
-    List<PostResponseDto> mockPosts = Arrays.asList(mockPost1, mockPost2);
+    List<Post> mockPosts = Arrays.asList(mockPost1, mockPost2);
 
-    when(userService.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
-    when(postService.getPostsByUserId(TEST_USER_ID)).thenReturn(mockPosts);
+    when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
+    when(postRepository.findPostsByUserId(TEST_USER_ID)).thenReturn(mockPosts);
 
     // テスト実行
     Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject(TEST_USER_ID);
@@ -217,15 +205,14 @@ public class ActivityPubServiceTest {
   @Test
   void 投稿のないユーザーIDを渡すと空のOutboxオブジェクトが返る() {
     // モックの準備
-    UserResponse mockUser = UserResponse.builder()
-        .id("test_user_2")
-        .username("投稿なしユーザー")
-        .build();
+    User mockUser = new User();
+    mockUser.setId("test_user_2");
+    mockUser.setUsername("投稿なしユーザー");
 
-    List<PostResponseDto> emptyPosts = new ArrayList<>();
+    List<Post> emptyPosts = new ArrayList<>();
 
-    when(userService.findById("test_user_2")).thenReturn(Optional.of(mockUser));
-    when(postService.getPostsByUserId("test_user_2")).thenReturn(emptyPosts);
+    when(userRepository.findById("test_user_2")).thenReturn(Optional.of(mockUser));
+    when(postRepository.findPostsByUserId("test_user_2")).thenReturn(emptyPosts);
 
     // テスト実行
     Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject("test_user_2");
@@ -242,7 +229,7 @@ public class ActivityPubServiceTest {
 
   @Test
   void 存在しないユーザーIDのOutboxを取得するとEmptyが返る() {
-    when(userService.findById("not_exist_user")).thenReturn(Optional.empty());
+    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
 
     Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject("not_exist_user");
 

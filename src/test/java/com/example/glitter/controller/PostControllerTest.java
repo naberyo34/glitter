@@ -23,7 +23,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequest;
-import com.example.glitter.domain.Post.PostResponseDto;
+import com.example.glitter.domain.Post.PostResponse;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -67,7 +67,7 @@ public class PostControllerTest {
     mockMvc.perform(get("/post/1"))
         .andExpect(status().isOk()).andExpect(result -> {
           String content = result.getResponse().getContentAsString();
-          PostResponseDto resultPostResponseDto = objectMapper.readValue(content, PostResponseDto.class);
+          PostResponse resultPostResponseDto = objectMapper.readValue(content, PostResponse.class);
           assertEquals(resultPostResponseDto.getId(), 1L);
         });
   }

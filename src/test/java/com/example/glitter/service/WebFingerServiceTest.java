@@ -16,15 +16,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.WebFinger.WebFingerResponse;
 import com.example.glitter.domain.WebFinger.WebFingerResponse.Link;
+import com.example.glitter.generated.User;
 
 @ExtendWith(MockitoExtension.class)
 public class WebFingerServiceTest {
   @Mock
-  private UserService userService;
-
+  private UserRepository userRepository;
   @InjectMocks
   private WebFingerService webFingerService;
 
@@ -41,9 +41,9 @@ public class WebFingerServiceTest {
   @Test
   void 正しいリソースを渡すと適切なJRDが返る() {
     String resource = "acct:" + TEST_USER_ID + "@" + TEST_DOMAIN;
-    UserResponse mockUser = new UserResponse();
+    User mockUser = new User();
     mockUser.setId(TEST_USER_ID);
-    when(userService.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
+    when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
 
     Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isPresent());
@@ -73,7 +73,7 @@ public class WebFingerServiceTest {
   @Test
   void 存在しないユーザーのリソースを渡すとEmptyが返る() {
     String resource = "acct:not_exist_user@" + TEST_DOMAIN;
-    when(userService.findById("not_exist_user")).thenReturn(Optional.empty());
+    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
 
     Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());

@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostResponseDto {
+public class PostResponse {
   @Schema(description = "投稿 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
   private Long id;
 
@@ -34,8 +34,8 @@ public class PostResponseDto {
   @Schema(description = "ユーザー情報", requiredMode = Schema.RequiredMode.REQUIRED)
   private UserResponse user;
 
-  public static PostResponseDto fromEntity(Post post, User user) {
-    PostResponseDto postResponseDto = new PostResponseDto();
+  public static PostResponse fromEntity(Post post, User user) {
+    PostResponse postResponseDto = new PostResponse();
     postResponseDto.setId(post.getId());
     postResponseDto.setContent(post.getContent());
     postResponseDto.setCreatedAt(post.getCreatedAt());

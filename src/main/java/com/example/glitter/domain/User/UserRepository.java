@@ -50,7 +50,7 @@ public class UserRepository {
   /**
    * セッションユーザーを取得する
    * 
-   * @return セッションユーザー (存在しない場合は null)
+   * @return セッションユーザー (非ログイン時は empty)
    */
   public Optional<User> getSessionUser() {
     try {

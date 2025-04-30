@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.glitter.service.UserService;
+import com.example.glitter.domain.User.UserRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RestController
 public class NodeInfoController {
   @Autowired
-  private UserService userService;
+  private UserRepository userRepository;
 
   @Value("${env.api-url}")
   private String apiUrl;
@@ -48,7 +48,7 @@ public class NodeInfoController {
             "version", "0.0.1"),
         "usage", Map.of(
             "users", Map.of(
-                "total", userService.countAll())),
+                "total", userRepository.countAll())),
         "services", Map.of(
             "inbound", List.of(),
             "outbound", List.of()),

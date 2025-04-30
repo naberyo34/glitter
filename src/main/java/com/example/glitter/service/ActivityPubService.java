@@ -15,8 +15,10 @@ import com.example.glitter.domain.ActivityPub.ActivityPubObject;
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
-import com.example.glitter.domain.Post.PostResponseDto;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.Post.PostRepository;
+import com.example.glitter.domain.User.UserRepository;
+import com.example.glitter.generated.Post;
+import com.example.glitter.generated.User;
 
 /**
  * ActivityPubService の実装
@@ -24,17 +26,14 @@ import com.example.glitter.domain.User.UserResponse;
 @Service
 public class ActivityPubService {
   @Autowired
-  private UserService userService;
-
+  private UserRepository userRepository;
   @Autowired
-  private PostService postService;
+  private PostRepository postRepository;
 
   @Value("${env.api-url}")
   private String apiUrl;
-
   @Value("${env.storage-url}")
   private String storageUrl;
-
   @Value("${env.storage-bucket-name}")
   private String bucketName;
 
@@ -42,35 +41,35 @@ public class ActivityPubService {
    * ユーザー ID から ActivityPub Actor オブジェクトを取得する
    * 
    * @param userId ユーザーID
-   * @return Actorオブジェクト
+   * @return Actor オブジェクト
    */
   public Optional<Actor> getActorObject(String userId) {
-    return userService.findById(userId).map(user -> createActorFromUser(user));
+    return userRepository.findById(userId).map(user -> createActorFromUser(user));
   }
 
   /**
    * 投稿 ID から ActivityPub Note オブジェクトを取得する
    * 
    * @param postId
-   * @return
+   * @return Note オブジェクト
    */
   public Optional<Note> getNoteObject(Long postId) {
-    return postService.findById(postId).map(post -> {
+    return postRepository.findById(postId).map(post -> {
       return createNoteFromPost(post);
     });
   }
 
   /**
    * 投稿 ID から ActivityPub Activity オブジェクトを取得する
-   * TODO: これは仮置きです
    * 
    * @param postId
    * @return
    */
   public Optional<Activity> getActivityFromPost(Long postId) {
-    return postService.findById(postId).map(post -> {
+    return postRepository.findById(postId).map(post -> {
+      User user = userRepository.findById(post.getUserId()).orElseThrow();
       Note note = createNoteFromPost(post);
-      Activity activity = createActivityFromNote(post.getUser(), note);
+      Activity activity = createActivityFromNote(user, note);
       return activity;
     });
   }
@@ -79,11 +78,11 @@ public class ActivityPubService {
    * ユーザー ID から ActivityPub Outbox オブジェクトを取得する
    * 
    * @param userId ユーザーID
-   * @return Outboxオブジェクト
+   * @return Outbox オブジェクト
    */
   public Optional<OrderedCollection> getOutboxObject(String userId) {
-    return userService.findById(userId).map(user -> {
-      List<PostResponseDto> posts = postService.getPostsByUserId(userId);
+    return userRepository.findById(userId).map(user -> {
+      List<Post> posts = postRepository.findPostsByUserId(userId);
       List<Note> notes = posts.stream()
           .map(post -> createNoteFromPost(post))
           .toList();
@@ -95,9 +94,9 @@ public class ActivityPubService {
    * ユーザー情報から ActivityPub Actor オブジェクトを生成する
    * 
    * @param user ユーザー情報
-   * @return Actorオブジェクト
+   * @return Actor オブジェクト
    */
-  private Actor createActorFromUser(UserResponse user) {
+  private Actor createActorFromUser(User user) {
     // Actorオブジェクトを構築
     Actor.ActorBuilder builder = Actor.builder()
         .id(apiUrl + "/user/" + user.getId())
@@ -123,16 +122,14 @@ public class ActivityPubService {
    * 投稿から ActivityPub Note オブジェクトを生成する
    * 
    * @param post 投稿情報
-   * @return Noteオブジェクト
+   * @return Note オブジェクト
    */
-  private Note createNoteFromPost(PostResponseDto post) {
+  private Note createNoteFromPost(Post post) {
     // ISO-8601 形式の日時文字列に変換
     String published = post.getCreatedAt().toInstant().atOffset(ZoneOffset.UTC)
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    UserResponse user = post.getUser();
-
-    String actorUrl = apiUrl + "/user/" + user.getId();
-    // TODO: 現状、投稿IDはユーザーと紐付かない一意な値である。後々 user/{id}/post/{postId} にしたほうがよいかも
+    String userId = post.getUserId();
+    String actorUrl = apiUrl + "/user/" + userId;
     String noteUrl = apiUrl + "/post/" + post.getId();
 
     return Note.builder()
@@ -149,9 +146,9 @@ public class ActivityPubService {
    * 
    * @param user  ユーザー情報
    * @param notes ノートのリスト
-   * @return OrderedCollectionオブジェクト
+   * @return OrderedCollection オブジェクト
    */
-  private OrderedCollection createOutboxFromPosts(UserResponse user, List<Note> notes) {
+  private OrderedCollection createOutboxFromPosts(User user, List<Note> notes) {
     String outboxUrl = apiUrl + "/user/" + user.getId() + "/outbox";
 
     // OrderedCollection オブジェクトを作成
@@ -179,8 +176,9 @@ public class ActivityPubService {
    * @param note ノート
    * @return Activityオブジェクト
    */
-  private Activity createActivityFromNote(UserResponse user, Note note) {
+  private Activity createActivityFromNote(User user, Note note) {
     String actorUrl = apiUrl + "/user/" + user.getId();
+
     // TODO: 雑
     String postId = note.getId().substring(note.getId().lastIndexOf("/") + 1);
     String activityUrl = apiUrl + "/activity/" + postId;

@@ -61,19 +61,19 @@ public class PostRepositoryTest {
 
   @Test
   void ユーザーIDに紐づく投稿を取得したときその投稿のリストが返る() throws Exception {
-    List<Post> posts = postRepository.findByUserId("test_user");
+    List<Post> posts = postRepository.findPostsByUserId("test_user");
     assertThat(posts).isNotEmpty();
   }
 
   @Test
   void ユーザーIDに紐づく投稿が存在しないとき空のリストが返る() throws Exception {
-    List<Post> posts = postRepository.findByUserId("test_user_2");
+    List<Post> posts = postRepository.findPostsByUserId("test_user_2");
     assertThat(posts).isEmpty();
   }
 
   @Test
   void 存在しないユーザーの投稿を取得したとき空のリストが返る() throws Exception {
-    List<Post> posts = postRepository.findByUserId("not_exist_user");
+    List<Post> posts = postRepository.findPostsByUserId("not_exist_user");
     assertThat(posts).isEmpty();
   }
 

@@ -16,12 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
-import com.example.glitter.domain.Post.PostParamsDto;
 import com.example.glitter.domain.Post.PostRequest;
-import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.service.ActivityPubService;
-import com.example.glitter.service.PostService;
-import com.example.glitter.service.UserService;
+import com.example.glitter.service.PostWithAuthorService;
+import com.example.glitter.service.SessionUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,9 +31,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/post")
 public class PostController {
   @Autowired
-  private PostService postService;
+  private PostWithAuthorService postWithAuthorService;
   @Autowired
-  private UserService userService;
+  private SessionUserService sessionUserService;
   @Autowired
   private ActivityPubService activityPubService;
 
@@ -62,7 +60,7 @@ public class PostController {
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
     } else {
       // 通常の投稿情報を返す
-      return ResponseEntity.ok(postService.findById(id)
+      return ResponseEntity.ok(postWithAuthorService.findById(id)
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND)));
     }
   }
@@ -82,10 +80,7 @@ public class PostController {
   @PreAuthorize("isAuthenticated()")
   public PostDto addPost(@RequestBody PostRequest content) throws ErrorResponseException {
     try {
-      UserResponse sessionUser = userService.getSessionUser()
-          .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
-      PostParamsDto postParamsDto = new PostParamsDto(sessionUser.getId(), content.getContent());
-      return postService.add(postParamsDto)
+      return sessionUserService.addPost(content.getContent())
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR));
     } catch (Exception e) {
       throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR);

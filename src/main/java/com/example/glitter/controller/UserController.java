@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,12 +19,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
-import com.example.glitter.domain.Post.PostResponseDto;
+import com.example.glitter.domain.Post.PostResponse;
+import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.service.ActivityPubService;
-import com.example.glitter.service.PostService;
-import com.example.glitter.service.UserIconService;
-import com.example.glitter.service.UserService;
+import com.example.glitter.service.PostWithAuthorService;
+import com.example.glitter.service.SessionUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,14 +35,13 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/user")
-@Validated
 public class UserController {
   @Autowired
-  private UserService userService;
+  private UserRepository userRepository;
   @Autowired
-  private PostService postService;
+  private SessionUserService sessionUserService;
   @Autowired
-  private UserIconService userIconService;
+  private PostWithAuthorService postWithAuthorService;
   @Autowired
   private ActivityPubService activityPubService;
 
@@ -60,7 +58,7 @@ public class UserController {
     // Accept ヘッダーを確認
     String acceptHeader = request.getHeader("Accept");
     boolean isActivityPubRequest = acceptHeader != null && acceptHeader.contains("application/activity+json");
-    
+
     if (isActivityPubRequest) {
       // ActivityPub Actorとしてユーザー情報を返す
       return activityPubService.getActorObject(id)
@@ -70,7 +68,7 @@ public class UserController {
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
     } else {
       // 通常のユーザー情報を返す
-      return ResponseEntity.ok(userService.findById(id)
+      return ResponseEntity.ok(userRepository.findById(id)
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND)));
     }
   }
@@ -93,16 +91,16 @@ public class UserController {
 
   @Operation(summary = "ユーザーの投稿を全件取得", description = "ユーザーの投稿を全件取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))),
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostResponse.class))),
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからないとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       }) })
   @GetMapping("/{id}/post")
-  public List<PostResponseDto> getUserPosts(@PathVariable String id) throws ErrorResponseException {
+  public List<PostResponse> getUserPosts(@PathVariable String id) throws ErrorResponseException {
     // ユーザーの存在判定
-    userService.findById(id).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
-    return postService.getPostsByUserId(id);
+    userRepository.findById(id).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
+    return postWithAuthorService.findPostsByUserId(id);
   }
 
   @Operation(summary = "セッションユーザーを取得", description = "セッションユーザーを取得します。ログインしていない場合は 401 が返ります。通常発生しませんが、ログインしているにもかかわらずユーザーのデータが見つからない場合、404 ではなく null を返します。", responses = {
@@ -116,8 +114,7 @@ public class UserController {
   @GetMapping("/me")
   @PreAuthorize("isAuthenticated()")
   public UserResponse getSessionUser() throws ErrorResponseException {
-    return userService.getSessionUser()
-        .orElse(null);
+    return sessionUserService.getMe();
   }
 
   @Operation(summary = "アイコン画像の更新", description = "アイコン画像を更新します。ログインが必須です。成功時はアイコン画像のパス情報を含む userResponse を返します。", responses = {
@@ -136,9 +133,7 @@ public class UserController {
   @PreAuthorize("isAuthenticated()")
   public UserResponse updateIcon(@RequestParam("file") MultipartFile file) throws ErrorResponseException {
     try {
-      userService.getSessionUser()
-          .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
-      return userIconService.updateIcon(file);
+      return sessionUserService.updateIcon(file);
     } catch (Exception e) {
       throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR);
     }

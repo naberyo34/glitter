@@ -33,7 +33,7 @@ public class PostRepository {
    * @param userId
    * @return 投稿のリスト
    */
-  public List<Post> findByUserId(String userId) {
+  public List<Post> findPostsByUserId(String userId) {
     return postMapper.select((c) -> c.where(PostDynamicSqlSupport.userId, isEqualTo(userId))
         .orderBy(PostDynamicSqlSupport.createdAt.descending()));
   }

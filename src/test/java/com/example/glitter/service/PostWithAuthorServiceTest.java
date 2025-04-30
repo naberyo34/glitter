@@ -2,9 +2,6 @@ package com.example.glitter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -18,27 +15,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.glitter.domain.Post.PostDto;
-import com.example.glitter.domain.Post.PostParamsDto;
 import com.example.glitter.domain.Post.PostRepository;
-import com.example.glitter.domain.Post.PostResponseDto;
+import com.example.glitter.domain.Post.PostResponse;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
-import jakarta.validation.ConstraintViolationException;
-
 @ExtendWith(MockitoExtension.class)
-public class PostServiceTest {
-
+public class PostWithAuthorServiceTest {
   @Mock
   private PostRepository postRepository;
-
   @Mock
   private UserRepository userRepository;
-
   @InjectMocks
-  private PostService postService;
+  private PostWithAuthorService postWithAuthorService;
 
   @Test
   void IDから投稿を取得できる() throws Exception {
@@ -57,7 +47,7 @@ public class PostServiceTest {
     when(userRepository.findById("test_user")).thenReturn(Optional.of(mockUser));
 
     // テスト実行
-    Optional<PostResponseDto> post = postService.findById(1L);
+    Optional<PostResponse> post = postWithAuthorService.findById(1L);
 
     // 検証
     assertThat(post).isPresent();
@@ -73,14 +63,14 @@ public class PostServiceTest {
     when(postRepository.findById(999L)).thenReturn(Optional.empty());
 
     // テスト実行
-    Optional<PostResponseDto> post = postService.findById(999L);
+    Optional<PostResponse> post = postWithAuthorService.findById(999L);
 
     // 検証
     assertThat(post).isNotPresent();
   }
 
   @Test
-  void ユーザーに紐づく投稿を取得できる() throws Exception {
+  void ユーザーに紐づく投稿リストを取得できる() throws Exception {
     // モックデータの準備
     Post mockPost1 = new Post();
     mockPost1.setId(1L);
@@ -100,11 +90,11 @@ public class PostServiceTest {
     mockUser.setId("test_user");
     mockUser.setUsername("テストユーザー");
 
-    when(postRepository.findByUserId("test_user")).thenReturn(mockPosts);
+    when(postRepository.findPostsByUserId("test_user")).thenReturn(mockPosts);
     when(userRepository.findById("test_user")).thenReturn(Optional.of(mockUser));
 
     // テスト実行
-    List<PostResponseDto> posts = postService.getPostsByUserId("test_user");
+    List<PostResponse> posts = postWithAuthorService.findPostsByUserId("test_user");
 
     // 検証
     assertThat(posts).isNotEmpty();
@@ -123,64 +113,12 @@ public class PostServiceTest {
   @Test
   void ユーザーの投稿がない場合空のリストが返る() throws Exception {
     // モックデータの準備 - 投稿が空の場合
-    when(postRepository.findByUserId("test_user_2")).thenReturn(new ArrayList<>());
+    when(postRepository.findPostsByUserId("test_user_2")).thenReturn(new ArrayList<>());
 
     // テスト実行
-    List<PostResponseDto> posts = postService.getPostsByUserId("test_user_2");
+    List<PostResponse> posts = postWithAuthorService.findPostsByUserId("test_user_2");
 
     // 検証
     assertThat(posts).isEmpty();
-  }
-
-  @Test
-  void 投稿を追加できる() throws Exception {
-    // モックデータの準備
-    Post newPost = new Post();
-    newPost.setId(3L);
-    newPost.setUserId("test_user");
-    newPost.setContent("new post");
-    newPost.setCreatedAt(new Date());
-
-    when(postRepository.insert(any(Post.class))).thenReturn(newPost);
-
-    // テスト実行
-    PostParamsDto postParams = new PostParamsDto("test_user", "new post");
-    Optional<PostDto> result = postService.add(postParams);
-
-    // 検証
-    assertThat(result).isPresent();
-    assertEquals(3L, result.get().getId());
-    assertEquals("test_user", result.get().getUserId());
-    assertEquals("new post", result.get().getContent());
-
-    verify(postRepository).insert(any(Post.class));
-  }
-
-  @Test
-  void 空文字のみの投稿に失敗する() throws Exception {
-    // モックの振る舞いを設定 - バリデーションエラー
-    when(postRepository.insert(any(Post.class))).thenThrow(new ConstraintViolationException("空文字は投稿できません", null));
-
-    // テスト実行と検証
-    PostParamsDto postParams = new PostParamsDto("test_user", " ");
-    assertThrows(ConstraintViolationException.class, () -> {
-      postService.add(postParams);
-    });
-
-    verify(postRepository).insert(any(Post.class));
-  }
-
-  @Test
-  void 不正なユーザーの投稿が失敗する() throws Exception {
-    // モックの準備 - 不正なユーザーID
-    when(postRepository.insert(any(Post.class))).thenThrow(new IllegalArgumentException("存在しないユーザーIDです"));
-
-    // テスト実行と検証
-    PostParamsDto postParams = new PostParamsDto("invalid_user", "new post");
-    assertThrows(IllegalArgumentException.class, () -> {
-      postService.add(postParams);
-    });
-
-    verify(postRepository).insert(any(Post.class));
   }
 }

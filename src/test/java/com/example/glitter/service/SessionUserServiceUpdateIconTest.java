@@ -1,8 +1,7 @@
 package com.example.glitter.service;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,17 +20,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.util.WithMockJwt;
 
 /**
  * ストレージの操作ができることを確認するため 結合テストとして実施
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
-public class ImageServiceTest {
+public class SessionUserServiceUpdateIconTest {
   @LocalServerPort
   private int port;
 
@@ -63,39 +60,19 @@ public class ImageServiceTest {
   }
 
   @Autowired
-  private ImageService imageService;
-  @Autowired
-  private S3Client s3Client;
+  private SessionUserService sessionUserService;
 
   private String EXAMPLE_IMAGE_FILE_PATH = "src/test/resources/static/images/example.jpg";
 
   @Test
-  void 画像をアップロードおよび削除できる() throws Exception {
-    try {
-      MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
-          Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
-      String key = "example.jpg";
-      imageService.upload(mockMultipartFile, key);
+  @WithMockJwt
+  void ログインユーザーのアイコンを変更できる() throws Exception {
+    MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
+        Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
 
-      // 存在確認
-      HeadObjectResponse headResponse = s3Client.headObject(HeadObjectRequest.builder()
-          .bucket("test")
-          .key(key)
-          .build());
-      assertNotNull(headResponse);
+    UserResponse resultUser = sessionUserService.updateIcon(mockMultipartFile);
 
-      // 削除して、存在しないことを確認
-      imageService.delete(key);
-      // headObject は存在しなければ例外を返すため、 throw を期待する
-      assertThrows(S3Exception.class, () -> {
-        s3Client.headObject(HeadObjectRequest.builder()
-            .bucket("test")
-            .key(key)
-            .build());
-      });
-
-    } catch (Exception e) {
-      fail(e);
-    }
+    assertNotNull(resultUser);
+    assertTrue(resultUser.getIcon().endsWith(".jpg"));
   }
 }
