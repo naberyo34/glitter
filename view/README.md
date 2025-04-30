@@ -1,7 +1,7 @@
 # Glitter-view
 
 Glitter のフロントエンドです。
-react-router-v7 によって動作します。
+react-router-v7 on Hono によって動作します。
 
 ## Getting Started
 
