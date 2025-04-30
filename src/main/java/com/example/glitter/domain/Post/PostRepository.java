@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.PostDynamicSqlSupport;
@@ -24,7 +23,6 @@ public class PostRepository {
    * @param id
    * @return 合致する投稿 (存在しない場合は null)
    */
-  @Transactional
   public Optional<Post> findById(Long id) {
     return postMapper.selectOne(c -> c.where(PostDynamicSqlSupport.id, isEqualTo(id)));
   }
@@ -35,7 +33,6 @@ public class PostRepository {
    * @param userId
    * @return 投稿のリスト
    */
-  @Transactional
   public List<Post> findByUserId(String userId) {
     return postMapper.select((c) -> c.where(PostDynamicSqlSupport.userId, isEqualTo(userId))
         .orderBy(PostDynamicSqlSupport.createdAt.descending()));
@@ -43,9 +40,10 @@ public class PostRepository {
 
   /**
    * 投稿を追加する
+   * 
+   * @param post
    * @return 追加した投稿
    */
-  @Transactional
   public Post insert(Post post) {
     postMapper.insert(post);
     return post;

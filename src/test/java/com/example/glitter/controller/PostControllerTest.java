@@ -22,13 +22,14 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
-import com.example.glitter.domain.Post.PostRequestDto;
+import com.example.glitter.domain.Post.PostRequest;
 import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@Transactional
 public class PostControllerTest {
   @LocalServerPort
   private int port;
@@ -90,10 +91,9 @@ public class PostControllerTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void ログイン状態で投稿を追加できる() throws Exception {
-    PostRequestDto post = new PostRequestDto("new post");
+    PostRequest post = new PostRequest("new post");
     mockMvc.perform(post("/post")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(post)))
@@ -105,9 +105,8 @@ public class PostControllerTest {
   }
 
   @Test
-  @Transactional
   void 非ログイン状態の投稿で401が返る() throws Exception {
-    PostRequestDto post = new PostRequestDto("new post");
+    PostRequest post = new PostRequest("new post");
     mockMvc.perform(post("/post")
         .contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)
         .content(objectMapper.writeValueAsString(post)))

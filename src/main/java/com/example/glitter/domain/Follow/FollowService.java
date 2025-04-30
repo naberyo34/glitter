@@ -8,11 +8,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.User.UserService;
-import com.example.glitter.domain.User.UserSummaryDto;
+import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.User;
 
@@ -20,6 +21,7 @@ import jakarta.validation.constraints.NotBlank;
 
 @Service
 @Validated
+@Transactional
 public class FollowService {
   @Autowired
   private FollowRepository followRepository;
@@ -39,7 +41,7 @@ public class FollowService {
    * @throws AccessDeniedException    セッションユーザーが取得できない場合
    */
   public FollowDto follow(@NotBlank String followeeId) {
-    UserSummaryDto sessionUser = userService.getSessionUser()
+    UserResponse sessionUser = userService.getSessionUser()
         .orElseThrow(() -> new AccessDeniedException("セッションユーザーを取得できません"));
 
     // フォロー対象のユーザーが存在するか確認
@@ -77,7 +79,7 @@ public class FollowService {
    * @throws AccessDeniedException セッションユーザーが取得できない場合
    */
   public boolean unfollow(@NotBlank String followeeId) {
-    UserSummaryDto sessionUser = userService.getSessionUser()
+    UserResponse sessionUser = userService.getSessionUser()
         .orElseThrow(() -> new AccessDeniedException("セッションユーザーを取得できません"));
 
     // フォロー情報を削除
@@ -92,7 +94,7 @@ public class FollowService {
    * @param userId ユーザーID
    * @return フォロー一覧
    */
-  public List<UserSummaryDto> getFollowing(@NotBlank String userId) {
+  public List<UserResponse> getFollowing(@NotBlank String userId) {
     userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("ユーザーが見つかりません: " + userId));
 
@@ -102,7 +104,7 @@ public class FollowService {
         .map(follow -> {
           User user = userRepository.findById(follow.getFolloweeId())
               .orElseThrow();
-          return UserSummaryDto.fromEntity(user);
+          return UserResponse.fromEntity(user);
         })
         .collect(Collectors.toList());
   }
@@ -113,7 +115,7 @@ public class FollowService {
    * @param userId ユーザーID
    * @return フォロワー一覧
    */
-  public List<UserSummaryDto> getFollowers(@NotBlank String userId) {
+  public List<UserResponse> getFollowers(@NotBlank String userId) {
     userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("ユーザーが見つかりません: " + userId));
 
@@ -123,7 +125,7 @@ public class FollowService {
         .map(follow -> {
           User user = userRepository.findById(follow.getFollowerId())
               .orElseThrow();
-          return UserSummaryDto.fromEntity(user);
+          return UserResponse.fromEntity(user);
         })
         .collect(Collectors.toList());
   }
@@ -134,8 +136,8 @@ public class FollowService {
    * @return フォロー一覧
    * @throws AccessDeniedException セッションユーザーが取得できない場合
    */
-  public List<UserSummaryDto> getMyFollowing() {
-    UserSummaryDto sessionUser = userService.getSessionUser()
+  public List<UserResponse> getMyFollowing() {
+    UserResponse sessionUser = userService.getSessionUser()
         .orElseThrow(() -> new AccessDeniedException("セッションユーザーを取得できません"));
 
     return getFollowing(sessionUser.getId());
@@ -147,8 +149,8 @@ public class FollowService {
    * @return フォロワー一覧
    * @throws AccessDeniedException セッションユーザーが取得できない場合
    */
-  public List<UserSummaryDto> getMyFollowers() {
-    UserSummaryDto sessionUser = userService.getSessionUser()
+  public List<UserResponse> getMyFollowers() {
+    UserResponse sessionUser = userService.getSessionUser()
         .orElseThrow(() -> new AccessDeniedException("セッションユーザーを取得できません"));
 
     return getFollowers(sessionUser.getId());

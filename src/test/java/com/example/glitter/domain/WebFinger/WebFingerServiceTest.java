@@ -17,8 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.glitter.domain.User.UserService;
-import com.example.glitter.domain.User.UserSummaryDto;
-import com.example.glitter.domain.WebFinger.WebFinger.Link;
+import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.WebFinger.WebFingerResponse.Link;
 
 @ExtendWith(MockitoExtension.class)
 public class WebFingerServiceTest {
@@ -26,7 +26,7 @@ public class WebFingerServiceTest {
   private UserService userService;
 
   @InjectMocks
-  private WebFingerServiceImpl webFingerService;
+  private WebFingerService webFingerService;
 
   private final String TEST_API_URL = "https://api.example.com";
   private final String TEST_DOMAIN = "example.com";
@@ -41,14 +41,14 @@ public class WebFingerServiceTest {
   @Test
   void 正しいリソースを渡すと適切なJRDが返る() {
     String resource = "acct:" + TEST_USER_ID + "@" + TEST_DOMAIN;
-    UserSummaryDto mockUser = new UserSummaryDto();
+    UserResponse mockUser = new UserResponse();
     mockUser.setId(TEST_USER_ID);
     when(userService.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
 
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isPresent());
 
-    WebFinger jrd = jrdOpt.get();
+    WebFingerResponse jrd = jrdOpt.get();
     assertEquals(resource, jrd.getSubject());
 
     List<Link> links = jrd.getLinks();
@@ -66,7 +66,7 @@ public class WebFingerServiceTest {
     String wrongDomain = "malicious.com";
     String resource = "acct:" + TEST_USER_ID + "@" + wrongDomain;
 
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());
   }
 
@@ -75,19 +75,19 @@ public class WebFingerServiceTest {
     String resource = "acct:not_exist_user@" + TEST_DOMAIN;
     when(userService.findById("not_exist_user")).thenReturn(Optional.empty());
 
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());
   }
 
   @Test
   void nullリソースを渡すとEmptyが返る() {
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(null);
+    Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(null);
     assertTrue(jrdOpt.isEmpty());
   }
 
   @Test
   void 空文字リソースを渡すとEmptyが返る() {
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd("");
+    Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd("");
     assertTrue(jrdOpt.isEmpty());
   }
 
@@ -95,7 +95,7 @@ public class WebFingerServiceTest {
   void 不正な形式のリソースを渡すとEmptyが返る() {
     String resource = TEST_USER_ID + "@" + TEST_DOMAIN;
 
-    Optional<WebFinger> jrdOpt = webFingerService.getJrd(resource);
+    Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());
   }
 }

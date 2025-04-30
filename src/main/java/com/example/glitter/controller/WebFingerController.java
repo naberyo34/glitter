@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.glitter.domain.WebFinger.WebFinger;
+import com.example.glitter.domain.WebFinger.WebFingerResponse;
 import com.example.glitter.domain.WebFinger.WebFingerService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +25,7 @@ public class WebFingerController {
 
   @Operation(summary = "WebFinger の応答を取得する", description = "ActivityPub 向けに WebFinger リソースを提供します。acct:username@domain 形式のリソースパラメータが必要です。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/jrd+json", schema = @Schema(implementation = WebFinger.class))
+          @Content(mediaType = "application/jrd+json", schema = @Schema(implementation = WebFingerResponse.class))
       }),
       @ApiResponse(responseCode = "400", description = "リソースパラメータが不正または存在しない場合", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
@@ -35,7 +35,7 @@ public class WebFingerController {
       }),
   })
   @GetMapping(value = "/.well-known/webfinger", produces = "application/jrd+json")
-  public ResponseEntity<WebFinger> getWebFinger(@RequestParam(name = "resource", required = true) String resource)
+  public ResponseEntity<WebFingerResponse> getWebFinger(@RequestParam(name = "resource", required = true) String resource)
       throws ErrorResponseException {
     if (resource == null || resource.isEmpty()) {
       throw new ErrorResponseException(HttpStatus.BAD_REQUEST);

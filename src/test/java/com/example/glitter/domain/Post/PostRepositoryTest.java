@@ -21,13 +21,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import com.example.glitter.generated.Post;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class PostRepositoryTest {
   @LocalServerPort
   private int port;
 
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-    "postgres:16-alpine"
-  );
+      "postgres:16-alpine");
 
   @BeforeAll
   static void beforeAll() {
@@ -78,7 +78,6 @@ public class PostRepositoryTest {
   }
 
   @Test
-  @Transactional
   void 正しいユーザーで投稿できる() throws Exception {
     Post post = new Post();
     post.setUserId("test_user");
@@ -93,7 +92,6 @@ public class PostRepositoryTest {
   }
 
   @Test
-  @Transactional
   void 存在しないユーザーで投稿に失敗する() throws Exception {
     Post post = new Post();
     post.setUserId("not_exist_user");

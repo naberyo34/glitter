@@ -2,7 +2,7 @@ package com.example.glitter.domain.Post;
 
 import java.util.Date;
 
-import com.example.glitter.domain.User.UserSummaryDto;
+import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
@@ -32,14 +32,14 @@ public class PostResponseDto {
   private Date createdAt;
 
   @Schema(description = "ユーザー情報", requiredMode = Schema.RequiredMode.REQUIRED)
-  private UserSummaryDto user;
+  private UserResponse user;
 
   public static PostResponseDto fromEntity(Post post, User user) {
     PostResponseDto postResponseDto = new PostResponseDto();
     postResponseDto.setId(post.getId());
     postResponseDto.setContent(post.getContent());
     postResponseDto.setCreatedAt(post.getCreatedAt());
-    postResponseDto.setUser(UserSummaryDto.fromEntity(user));
+    postResponseDto.setUser(UserResponse.fromEntity(user));
     return postResponseDto;
   }
 }

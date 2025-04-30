@@ -20,12 +20,12 @@ public class UserIconService {
    * セッションユーザーのアイコン画像を更新する
    * 
    * @param file
-   * @return UserSummaryDto
+   * @return userResponse
    * @throws Exception
    */
-  public UserSummaryDto updateIcon(MultipartFile file) throws Exception {
+  public UserResponse updateIcon(MultipartFile file) throws Exception {
     // セッションユーザーの取得
-    UserSummaryDto sessionUser = userService.getSessionUser().orElseThrow();
+    UserResponse sessionUser = userService.getSessionUser().orElseThrow();
     // 既存のアイコン画像を削除
     if (StringUtils.hasLength(sessionUser.getIcon())) {
       imageService.delete(sessionUser.getIcon());

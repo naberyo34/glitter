@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import com.example.glitter.generated.User;
@@ -12,19 +13,20 @@ import jakarta.validation.Valid;
 
 @Service
 @Validated
+@Transactional
 public class UserService {
   @Autowired
   private UserRepository userRepository;
 
   /**
-   * ID からユーザー Summary を取得する
+   * ID からユーザー Response を取得する
    * 
    * @param userId
-   * @return 合致するユーザー Summary (存在しない場合は null)
+   * @return 合致するユーザー Response (存在しない場合は null)
    */
-  public Optional<UserSummaryDto> findById(String userId) {
+  public Optional<UserResponse> findById(String userId) {
     Optional<User> user = userRepository.findById(userId);
-    return user.map(UserSummaryDto::fromEntity);
+    return user.map(UserResponse::fromEntity);
   }
 
   /**
@@ -37,14 +39,14 @@ public class UserService {
   }
 
   /**
-   * セッションユーザー Summary を取得する
+   * セッションユーザー Response を取得する
    * 
-   * @return セッションユーザー Summary (存在しない場合は null)
+   * @return セッションユーザー Response (存在しない場合は null)
    */
-  public Optional<UserSummaryDto> getSessionUser() {
+  public Optional<UserResponse> getSessionUser() {
     try {
       Optional<User> user = userRepository.getSessionUser();
-      return user.map(UserSummaryDto::fromEntity);
+      return user.map(UserResponse::fromEntity);
     } catch (NullPointerException e) {
       // セッションユーザーが存在しない場合ぬるぽが出る、想定済みとして空の Optional を返す
       return Optional.empty();
@@ -56,41 +58,41 @@ public class UserService {
 
   /**
    * ユーザーを更新する
-   * 更新に成功した場合、更新したユーザー Summary を返す
+   * 更新に成功した場合、更新したユーザー Response を返す
    * 
    * @param userDto
-   * @return 更新したユーザー Summary (更新に失敗した場合は null)
+   * @return 更新したユーザー Response (更新に失敗した場合は null)
    */
-  public UserSummaryDto update(@Valid UserDto userDto) throws Exception {
+  public UserResponse update(@Valid UserDto userDto) throws Exception {
     try {
       User user = userDto.toEntity();
       // userRepository.updateByPrimaryKey は更新対象のユーザーが存在しない場合新規にユーザーを作ってしまう
       // 更新対象のユーザーが存在しない場合は例外を投げておく
       userRepository.findById(user.getId()).orElseThrow();
       User result = userRepository.update(user);
-      return UserSummaryDto.fromEntity(result);
+      return UserResponse.fromEntity(result);
     } catch (Exception e) {
       throw e;
     }
   }
 
   /**
-   * ユーザー Summary からユーザーを更新する
-   * 更新に成功した場合、更新したユーザー Summary を返す
+   * ユーザー Response からユーザーを更新する
+   * 更新に成功した場合、更新したユーザー Response を返す
    * 
-   * @param userSummaryDto
+   * @param userResponse
    * @return
    * @throws Exception
    */
-  public UserSummaryDto updateFromSummary(@Valid UserSummaryDto userSummaryDto) throws Exception {
+  public UserResponse updateFromSummary(@Valid UserResponse userResponse) throws Exception {
     try {
-      // UserSummaryDto には パスワードが含まれないため、一度 User を取得する
-      User user = userRepository.findById(userSummaryDto.getId()).orElseThrow();
-      user.setUsername(userSummaryDto.getUsername());
-      user.setProfile(userSummaryDto.getProfile());
-      user.setIcon(userSummaryDto.getIcon());
+      // userResponse には パスワードが含まれないため、一度 User を取得する
+      User user = userRepository.findById(userResponse.getId()).orElseThrow();
+      user.setUsername(userResponse.getUsername());
+      user.setProfile(userResponse.getProfile());
+      user.setIcon(userResponse.getIcon());
       User result = userRepository.update(user);
-      return UserSummaryDto.fromEntity(result);
+      return UserResponse.fromEntity(result);
     } catch (Exception e) {
       throw e;
     }

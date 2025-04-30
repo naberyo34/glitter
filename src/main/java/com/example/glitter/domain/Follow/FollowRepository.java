@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.FollowDynamicSqlSupport;
@@ -24,7 +23,6 @@ public class FollowRepository {
    * @param userId フォローしているユーザーのID
    * @return フォロー情報のリスト
    */
-  @Transactional
   public List<Follow> findFollowing(String userId) {
     return followMapper.select(c -> c.where(FollowDynamicSqlSupport.followerId, isEqualTo(userId)));
   }
@@ -35,7 +33,6 @@ public class FollowRepository {
    * @param userId フォローされているユーザーのID
    * @return フォロー情報のリスト
    */
-  @Transactional
   public List<Follow> findFollowers(String userId) {
     return followMapper.select(c -> c.where(FollowDynamicSqlSupport.followeeId, isEqualTo(userId)));
   }
@@ -46,7 +43,6 @@ public class FollowRepository {
    * @param follow フォロー情報
    * @return 追加したフォロー情報
    */
-  @Transactional
   public Follow insert(Follow follow) {
     followMapper.insert(follow);
     return follow;
@@ -59,7 +55,6 @@ public class FollowRepository {
    * @param followeeId フォローされているユーザーのID
    * @return 削除した行数
    */
-  @Transactional
   public int delete(String followerId, String followeeId) {
     return followMapper.delete(c -> c
         .where(FollowDynamicSqlSupport.followerId, isEqualTo(followerId))
@@ -73,7 +68,6 @@ public class FollowRepository {
    * @param followeeId フォローされているユーザーのID
    * @return フォロー情報（存在しない場合はEmpty）
    */
-  @Transactional
   public Optional<Follow> findByFollowerIdAndFolloweeId(String followerId, String followeeId) {
     return followMapper.selectOne(c -> c
         .where(FollowDynamicSqlSupport.followerId, isEqualTo(followerId))

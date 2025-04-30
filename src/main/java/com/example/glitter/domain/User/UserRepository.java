@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.glitter.generated.User;
 import com.example.glitter.generated.UserDynamicSqlSupport;
@@ -25,7 +24,6 @@ public class UserRepository {
    * @param id
    * @return 合致するユーザー (存在しない場合は null)
    */
-  @Transactional
   public Optional<User> findById(String id) {
     return userMapper.selectByPrimaryKey(id);
   }
@@ -36,7 +34,6 @@ public class UserRepository {
    * @param email
    * @return 合致するユーザー (存在しない場合は null)
    */
-  @Transactional
   public Optional<User> findByEmail(String email) {
     return userMapper.selectOne((c) -> c.where(UserDynamicSqlSupport.email, isEqualTo(email)));
   }
@@ -46,7 +43,6 @@ public class UserRepository {
    * 
    * @return ユーザーの総数
    */
-  @Transactional
   public long countAll() {
     return userMapper.count((c) -> c);
   }
@@ -56,7 +52,6 @@ public class UserRepository {
    * 
    * @return セッションユーザー (存在しない場合は null)
    */
-  @Transactional
   public Optional<User> getSessionUser() {
     try {
       Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -75,7 +70,6 @@ public class UserRepository {
    * 
    * @param user
    */
-  @Transactional
   public User insert(User user) {
     userMapper.insert(user);
     return user;
@@ -86,7 +80,6 @@ public class UserRepository {
    * 
    * @param user
    */
-  @Transactional
   public User update(User user) {
     userMapper.updateByPrimaryKey(user);
     return user;

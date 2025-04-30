@@ -32,12 +32,13 @@ import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostResponseDto;
-import com.example.glitter.domain.User.UserSummaryDto;
+import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@Transactional
 public class UserControllerTest {
   @LocalServerPort
   private int port;
@@ -156,7 +157,6 @@ public class UserControllerTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void ログイン中のユーザーのアイコン画像を変更できる() throws Exception {
     MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
@@ -167,12 +167,11 @@ public class UserControllerTest {
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isOk()).andReturn();
 
-    UserSummaryDto resultUser = objectMapper.readValue(result.getResponse().getContentAsString(), UserSummaryDto.class);
+    UserResponse resultUser = objectMapper.readValue(result.getResponse().getContentAsString(), UserResponse.class);
     assertTrue(resultUser.getIcon().endsWith(".jpg"));
   }
 
   @Test
-  @Transactional
   void 非ログイン中にユーザーのアイコン画像を変更しようとしたとき401が返る() throws Exception {
     MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
         Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));

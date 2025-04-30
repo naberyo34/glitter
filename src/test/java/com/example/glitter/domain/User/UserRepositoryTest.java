@@ -24,6 +24,7 @@ import com.example.glitter.generated.User;
 import com.example.glitter.util.WithMockJwt;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class UserRepositoryTest {
   @LocalServerPort
   private int port;
@@ -107,7 +108,6 @@ public class UserRepositoryTest {
   }
 
   @Test
-  @Transactional
   void 正しいIDとメールアドレスとパスワードを指定して新規のユーザーが作成できる() throws Exception {
     try {
       User newUser = userRepository.insert(createNewUser("new_user", "new@example.com", "new_user_sub"));
@@ -118,7 +118,6 @@ public class UserRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザー作成時にIDが重複しているとき例外が発生する() throws Exception {
     try {
       userRepository.insert(createNewUser("new_user", "new@example.com", "new_user_sub"));
@@ -130,7 +129,6 @@ public class UserRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザー作成時にメールアドレスが重複しているとき例外が発生する() throws Exception {
     try {
       userRepository.insert(createNewUser("new_user", "new@example.com", "new_user_sub"));
@@ -142,7 +140,6 @@ public class UserRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザー作成時にCognitoユーザーの一意のIDが重複しているとき例外が発生する() throws Exception {
     try {
       userRepository.insert(createNewUser("new_user", "new@example.com", "new_user_sub"));
@@ -154,7 +151,6 @@ public class UserRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザー作成時に渡すパラメータが誤っているとき例外が発生する() throws Exception {
     try {
       // ID とメールアドレスが null のユーザーを作成
@@ -168,7 +164,6 @@ public class UserRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザーを更新できる() throws Exception {
     try {
       User user = userRepository.findById("test_user").orElseThrow();

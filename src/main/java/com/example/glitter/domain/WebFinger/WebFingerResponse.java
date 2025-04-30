@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
-public class WebFinger {
+public class WebFingerResponse {
   @Schema(description = "acct (アクターエンドポイントを取得するために使う)", example = "acct:example@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
   private String subject;
   private List<Link> links;

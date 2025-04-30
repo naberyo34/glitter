@@ -27,6 +27,7 @@ import com.example.glitter.util.WithMockJwt;
  * ストレージの操作ができることを確認するため 結合テストとして実施
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class UserIconServiceTest {
   @LocalServerPort
   private int port;
@@ -64,17 +65,15 @@ public class UserIconServiceTest {
   private String EXAMPLE_IMAGE_FILE_PATH = "src/test/resources/static/images/example.jpg";
 
   @Test
-  @Transactional
   @WithMockJwt
   void ログインユーザーがアイコンを変更できる() throws Exception {
     MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
         Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
-    UserSummaryDto resultUser = userIconService.updateIcon(mockMultipartFile);
+    UserResponse resultUser = userIconService.updateIcon(mockMultipartFile);
     assertTrue(resultUser.getIcon().endsWith(".jpg"));
   }
 
   @Test
-  @Transactional
   void 非ログインユーザーはアイコンの変更に失敗する() throws Exception {
     MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
         Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));

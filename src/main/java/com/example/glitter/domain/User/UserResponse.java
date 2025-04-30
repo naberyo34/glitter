@@ -12,14 +12,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * ユーザー Summary クラス
+ * ユーザー Response クラス
  * 必要な情報のみが抽出された user です。原則アプリケーションはこちらのクラスを用いてユーザーを扱います。
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserSummaryDto {
+public class UserResponse {
   @Pattern(regexp = "^[a-zA-Z0-9_]+$")
   @Size(min = 1, max = 20)
   @Schema(description = "ユーザー ID", example = "example", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -36,7 +36,7 @@ public class UserSummaryDto {
   @Schema(description = "プロフィールアイコン", example = "/test_user/example.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private String icon;
 
-  public static UserSummaryDto fromEntity(User user) {
-    return new UserSummaryDto(user.getId(), user.getUsername(), user.getProfile(), user.getIcon());
+  public static UserResponse fromEntity(User user) {
+    return new UserResponse(user.getId(), user.getUsername(), user.getProfile(), user.getIcon());
   }
 }

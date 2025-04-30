@@ -18,13 +18,14 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.User.UserSummaryDto;
+import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.util.WithMockJwt;
 
 /**
  * 単体テストだとモック定義が冗長になり効果が薄いため、結合テストを実施
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class FollowServiceTest {
 
   @Autowired
@@ -51,7 +52,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void ユーザーをフォローできる() {
     FollowDto follow = followService.follow("test_user_3");
@@ -62,7 +62,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void 自分自身をフォローしようとすると例外が発生する() {
     assertThrows(IllegalArgumentException.class, () -> {
@@ -71,7 +70,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   void 非ログイン状態でフォローしようとすると例外が発生する() {
     assertThrows(AccessDeniedException.class, () -> {
       followService.follow("test_user_2");
@@ -79,7 +77,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void 存在しないユーザーをフォローしようとすると例外が発生する() {
     assertThrows(IllegalArgumentException.class, () -> {
@@ -88,20 +85,18 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void ユーザーのフォローを解除できる() {
     boolean result = followService.unfollow("test_user_2");
 
     assertTrue(result);
 
-    List<UserSummaryDto> following = followService.getMyFollowing();
+    List<UserResponse> following = followService.getMyFollowing();
     assertThat(following).hasSize(1);
     assertEquals("test_user_3", following.get(0).getId());
   }
 
   @Test
-  @Transactional
   void 非ログイン状態でフォロー解除しようとすると例外が発生する() {
     assertThrows(AccessDeniedException.class, () -> {
       followService.unfollow("test_user_2");
@@ -109,36 +104,33 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void ユーザーのフォロー一覧を取得できる() {
-    List<UserSummaryDto> myFollowing = followService.getMyFollowing();
+    List<UserResponse> myFollowing = followService.getMyFollowing();
     assertThat(myFollowing).hasSize(2);
     assertThat(myFollowing)
-        .extracting(UserSummaryDto::getId)
+        .extracting(UserResponse::getId)
         .containsExactlyInAnyOrder("test_user_2", "test_user_3");
 
-    List<UserSummaryDto> userFollowing = followService.getFollowing("test_user");
+    List<UserResponse> userFollowing = followService.getFollowing("test_user");
     assertThat(userFollowing).hasSize(2);
   }
 
   @Test
-  @Transactional
   @WithMockJwt
   void ユーザーのフォロワー一覧を取得できる() {
-    List<UserSummaryDto> followers = followService.getFollowers("test_user");
+    List<UserResponse> followers = followService.getFollowers("test_user");
 
     assertThat(followers).hasSize(2);
     assertThat(followers)
-        .extracting(UserSummaryDto::getId)
+        .extracting(UserResponse::getId)
         .containsExactlyInAnyOrder("test_user_2", "test_user_3");
 
-    List<UserSummaryDto> myFollowers = followService.getMyFollowers();
+    List<UserResponse> myFollowers = followService.getMyFollowers();
     assertThat(myFollowers).hasSize(2);
   }
 
   @Test
-  @Transactional
   void 非ログイン状態で自分のフォロー一覧を取得しようとすると例外が発生する() {
     assertThrows(AccessDeniedException.class, () -> {
       followService.getMyFollowing();
@@ -146,7 +138,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   void 非ログイン状態で自分のフォロワー一覧を取得しようとすると例外が発生する() {
     assertThrows(AccessDeniedException.class, () -> {
       followService.getMyFollowers();
@@ -154,7 +145,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   void 存在しないユーザーのフォロー一覧を取得しようとすると例外が発生する() {
     assertThrows(IllegalArgumentException.class, () -> {
       followService.getFollowing("not_exist_user");
@@ -162,7 +152,6 @@ public class FollowServiceTest {
   }
 
   @Test
-  @Transactional
   void 存在しないユーザーのフォロワー一覧を取得しようとすると例外が発生する() {
     assertThrows(IllegalArgumentException.class, () -> {
       followService.getFollowers("not_exist_user");

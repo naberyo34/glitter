@@ -21,7 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.example.glitter.domain.Post.PostResponseDto;
 import com.example.glitter.domain.Post.PostService;
 import com.example.glitter.domain.User.UserService;
-import com.example.glitter.domain.User.UserSummaryDto;
+import com.example.glitter.domain.User.UserResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class ActivityPubServiceTest {
@@ -33,7 +33,7 @@ public class ActivityPubServiceTest {
   private PostService postService;
 
   @InjectMocks
-  private ActivityPubServiceImpl activityPubService;
+  private ActivityPubService activityPubService;
 
   private final String TEST_API_URL = "https://api.example.com";
   private final String TEST_STORAGE_URL = "https://storage.example.com";
@@ -53,7 +53,7 @@ public class ActivityPubServiceTest {
   @Test
   void 存在するユーザーIDを渡すと正しいActorオブジェクトが返る() {
     // モックの準備
-    UserSummaryDto mockUser = UserSummaryDto.builder()
+    UserResponse mockUser = UserResponse.builder()
         .id(TEST_USER_ID)
         .username(TEST_USER_NAME)
         .profile(TEST_USER_PROFILE)
@@ -91,7 +91,7 @@ public class ActivityPubServiceTest {
   @Test
   void 存在する投稿IDを渡すと正しいNoteオブジェクトが返る() {
     // モックの準備
-    UserSummaryDto mockUser = UserSummaryDto.builder()
+    UserResponse mockUser = UserResponse.builder()
         .id(TEST_USER_ID)
         .username(TEST_USER_NAME)
         .build();
@@ -128,7 +128,7 @@ public class ActivityPubServiceTest {
   @Test
   void 存在する投稿IDを渡すと正しいActivityオブジェクトが返る() {
     // モックの準備
-    UserSummaryDto mockUser = UserSummaryDto.builder()
+    UserResponse mockUser = UserResponse.builder()
         .id(TEST_USER_ID)
         .username(TEST_USER_NAME)
         .build();
@@ -162,7 +162,7 @@ public class ActivityPubServiceTest {
   @Test
   void 存在するユーザーIDを渡すと正しいOutboxオブジェクトが返る() {
     // モックの準備
-    UserSummaryDto mockUser = UserSummaryDto.builder()
+    UserResponse mockUser = UserResponse.builder()
         .id(TEST_USER_ID)
         .username(TEST_USER_NAME)
         .build();
@@ -214,7 +214,7 @@ public class ActivityPubServiceTest {
   @Test
   void 投稿のないユーザーIDを渡すと空のOutboxオブジェクトが返る() {
     // モックの準備
-    UserSummaryDto mockUser = UserSummaryDto.builder()
+    UserResponse mockUser = UserResponse.builder()
         .id("test_user_2")
         .username("投稿なしユーザー")
         .build();

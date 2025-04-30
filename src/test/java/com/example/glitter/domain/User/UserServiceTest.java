@@ -41,10 +41,10 @@ public class UserServiceTest {
     when(userRepository.findById("test_user")).thenReturn(Optional.of(mockUser));
 
     // テスト実行
-    Optional<UserSummaryDto> user = userService.findById("test_user");
+    Optional<UserResponse> user = userService.findById("test_user");
 
     // 検証
-    assertThat(user).isPresent().get().isInstanceOf(UserSummaryDto.class);
+    assertThat(user).isPresent().get().isInstanceOf(UserResponse.class);
     user.ifPresent((u) -> {
       assertEquals("テストユーザー", u.getUsername());
     });
@@ -56,7 +56,7 @@ public class UserServiceTest {
     when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
 
     // テスト実行
-    Optional<UserSummaryDto> user = userService.findById("not_exist_user");
+    Optional<UserResponse> user = userService.findById("not_exist_user");
 
     // 検証
     assertThat(user).isEmpty();
@@ -73,10 +73,10 @@ public class UserServiceTest {
     when(userRepository.getSessionUser()).thenReturn(Optional.of(mockUser));
 
     // テスト実行
-    Optional<UserSummaryDto> user = userService.getSessionUser();
+    Optional<UserResponse> user = userService.getSessionUser();
 
     // 検証
-    assertThat(user).isPresent().get().isInstanceOf(UserSummaryDto.class);
+    assertThat(user).isPresent().get().isInstanceOf(UserResponse.class);
     user.ifPresent((u) -> {
       assertEquals("テストユーザー", u.getUsername());
     });
@@ -88,7 +88,7 @@ public class UserServiceTest {
     when(userRepository.getSessionUser()).thenThrow(new NullPointerException());
 
     // テスト実行
-    Optional<UserSummaryDto> user = userService.getSessionUser();
+    Optional<UserResponse> user = userService.getSessionUser();
 
     // 検証
     assertThat(user).isEmpty();
@@ -117,7 +117,7 @@ public class UserServiceTest {
     userDto.setEmail("test@example.com");
 
     // テスト実行
-    UserSummaryDto result = userService.update(userDto);
+    UserResponse result = userService.update(userDto);
 
     // 検証
     assertNotNull(result);
@@ -185,12 +185,12 @@ public class UserServiceTest {
     when(userRepository.update(any(User.class))).thenReturn(updatedUser);
 
     // テスト用DTOの作成
-    UserSummaryDto userSummaryDto = new UserSummaryDto();
-    userSummaryDto.setId("test_user");
-    userSummaryDto.setUsername("更新されたユーザー");
+    UserResponse userResponse = new UserResponse();
+    userResponse.setId("test_user");
+    userResponse.setUsername("更新されたユーザー");
 
     // テスト実行
-    UserSummaryDto result = userService.updateFromSummary(userSummaryDto);
+    UserResponse result = userService.updateFromSummary(userResponse);
 
     // 検証
     assertNotNull(result);
@@ -207,16 +207,16 @@ public class UserServiceTest {
 
     when(userRepository.findById("test_user")).thenReturn(Optional.of(originalUser));
 
-    UserSummaryDto userSummaryDto = new UserSummaryDto();
-    userSummaryDto.setId("test_user");
-    userSummaryDto.setUsername(""); // 空文字はバリデーションエラー
+    UserResponse userResponse = new UserResponse();
+    userResponse.setId("test_user");
+    userResponse.setUsername(""); // 空文字はバリデーションエラー
 
     doThrow(new ConstraintViolationException("バリデーションエラー", null))
         .when(userRepository).update(any(User.class));
 
     // テスト実行と検証
     try {
-      userService.updateFromSummary(userSummaryDto);
+      userService.updateFromSummary(userResponse);
       fail();
     } catch (Exception e) {
       assertNotNull(e);
@@ -229,13 +229,13 @@ public class UserServiceTest {
     when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
 
     // テスト用DTOの作成
-    UserSummaryDto userSummaryDto = new UserSummaryDto();
-    userSummaryDto.setId("not_exist_user");
-    userSummaryDto.setUsername("存在しないユーザー");
+    UserResponse userResponse = new UserResponse();
+    userResponse.setId("not_exist_user");
+    userResponse.setUsername("存在しないユーザー");
 
     // テスト実行と検証
     try {
-      userService.updateFromSummary(userSummaryDto);
+      userService.updateFromSummary(userResponse);
       fail();
     } catch (Exception e) {
       assertNotNull(e);

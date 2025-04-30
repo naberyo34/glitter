@@ -30,6 +30,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
  * ストレージの操作ができることを確認するため 結合テストとして実施
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class ImageServiceTest {
   @LocalServerPort
   private int port;
@@ -69,7 +70,6 @@ public class ImageServiceTest {
   private String EXAMPLE_IMAGE_FILE_PATH = "src/test/resources/static/images/example.jpg";
 
   @Test
-  @Transactional
   void 画像をアップロードおよび削除できる() throws Exception {
     try {
       MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",

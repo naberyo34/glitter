@@ -21,6 +21,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import com.example.glitter.generated.Follow;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class FollowRepositoryTest {
 
   @Autowired
@@ -47,7 +48,6 @@ public class FollowRepositoryTest {
   }
 
   @Test
-  @Transactional
   void フォロー情報を追加できる() {
     Follow follow = new Follow();
     follow.setFollowerId("test_user_2");
@@ -62,7 +62,6 @@ public class FollowRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザーのフォロー一覧を取得できる() {
     List<Follow> follows = followRepository.findFollowing("test_user");
 
@@ -73,7 +72,6 @@ public class FollowRepositoryTest {
   }
 
   @Test
-  @Transactional
   void ユーザーのフォロワー一覧を取得できる() {
     List<Follow> followers = followRepository.findFollowers("test_user");
 
@@ -84,7 +82,6 @@ public class FollowRepositoryTest {
   }
 
   @Test
-  @Transactional
   void フォロー関係を削除できる() {
     int deleted = followRepository.delete("test_user", "test_user_2");
 
@@ -95,7 +92,6 @@ public class FollowRepositoryTest {
   }
 
   @Test
-  @Transactional
   void 特定のフォロー関係を検索できる() {
     Optional<Follow> found = followRepository.findByFollowerIdAndFolloweeId("test_user", "test_user_2");
 
