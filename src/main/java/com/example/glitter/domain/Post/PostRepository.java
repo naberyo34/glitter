@@ -18,23 +18,24 @@ public class PostRepository {
   private PostMapper postMapper;
 
   /**
-   * ID から投稿を取得する
+   * uuid から投稿を取得する
    * 
-   * @param id
+   * @param uuid
    * @return 合致する投稿 (存在しない場合は null)
    */
-  public Optional<Post> findById(Long id) {
-    return postMapper.selectOne(c -> c.where(PostDynamicSqlSupport.id, isEqualTo(id)));
+  public Optional<Post> findByUuid(String uuid) {
+    return postMapper.selectOne(c -> c.where(PostDynamicSqlSupport.uuid, isEqualTo(uuid)));
   }
 
   /**
-   * ユーザーIDに紐づく投稿を取得する
+   * ユーザー ID とドメインに紐づく投稿のリストを取得する
    * 
    * @param userId
    * @return 投稿のリスト
    */
-  public List<Post> findPostsByUserId(String userId) {
+  public List<Post> findPostsByUserIdAndDomain(String userId, String userDomain) {
     return postMapper.select((c) -> c.where(PostDynamicSqlSupport.userId, isEqualTo(userId))
+        .and(PostDynamicSqlSupport.domain, isEqualTo(userDomain))
         .orderBy(PostDynamicSqlSupport.createdAt.descending()));
   }
 
@@ -45,7 +46,7 @@ public class PostRepository {
    * @return 追加した投稿
    */
   public Post insert(Post post) {
-    postMapper.insert(post);
+    postMapper.insertSelective(post);
     return post;
   }
 }

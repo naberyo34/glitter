@@ -1,16 +1,13 @@
 package com.example.glitter.domain.Post;
 
-import java.util.Date;
-
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -19,24 +16,16 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class PostResponse {
-  @Schema(description = "投稿 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-  private Long id;
-
-  @NotBlank
-  @Schema(description = "本文", example = "がんばります。", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String content;
-
-  @Schema(description = "投稿日時", example = "2025-03-10T08:14:12.451+00:00", requiredMode = Schema.RequiredMode.REQUIRED)
-  private Date createdAt;
-
+@EqualsAndHashCode(callSuper = true)
+public class PostWithAuthor extends Post {
   @Schema(description = "ユーザー情報", requiredMode = Schema.RequiredMode.REQUIRED)
   private UserResponse user;
 
-  public static PostResponse fromEntity(Post post, User user) {
-    PostResponse postResponseDto = new PostResponse();
-    postResponseDto.setId(post.getId());
+  public static PostWithAuthor fromEntity(Post post, User user) {
+    PostWithAuthor postResponseDto = new PostWithAuthor();
+    postResponseDto.setUuid(post.getUuid());
+    postResponseDto.setDomain(post.getDomain());
+    postResponseDto.setUserId(post.getUserId());
     postResponseDto.setContent(post.getContent());
     postResponseDto.setCreatedAt(post.getCreatedAt());
     postResponseDto.setUser(UserResponse.fromEntity(user));

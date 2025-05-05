@@ -1,66 +1,86 @@
 insert into
-  public."user" (id, username, email, profile, icon, sub)
+  "user" (
+    user_id,
+    domain,
+    actor_url,
+    username,
+    profile,
+    sub
+  )
 values
   (
     'test_user',
+    'example.com',
+    'https://example.com/user/test_user',
     'テストユーザー',
-    'test@example.com',
     'テスト用のアカウントです。',
-    '',
     'test_user_sub'
-  );
-
-insert into
-  public."user" (id, username, email, profile, icon, sub)
-values
+  ),
   (
     'test_user_2',
+    'example.com',
+    'https://example.com/user/test_user_2',
     'テストユーザー2',
-    'test2@example.com',
     'テスト用のアカウントです。2',
-    '',
     'test_user_2_sub'
-  );
-
-insert into
-  public."user" (id, username, email, profile, icon, sub)
-values
+  ),
   (
     'test_user_3',
+    'example.com',
+    'https://example.com/user/test_user_3',
     'テストユーザー3',
-    'test3@example.com',
     'テスト用のアカウントです。3',
-    '',
     'test_user_3_sub'
   );
 
+-- 本来自動割当だが、 テスト向けに UUID と createdAt を固定する
 insert into
-  public.post (user_id, content)
+  post (uuid, user_id, domain, content, created_at)
 values
-  ('test_user', 'テスト投稿');
+  (
+    'uuid_1',
+    'test_user',
+    'example.com',
+    'テスト投稿',
+    '2023-10-01 00:00:00'
+  ),
+  (
+    'uuid_2',
+    'test_user',
+    'example.com',
+    'テスト投稿2',
+    '2023-10-02 00:00:00'
+  );
 
 insert into
-  public.post (user_id, content)
+  follow (
+    follower_id,
+    follower_domain,
+    followee_id,
+    followee_domain
+  )
 values
-  ('test_user', 'テスト投稿2');
-
--- フォロー関係のテストデータ
-insert into
-  public.follow (follower_id, followee_id, timestamp)
-values
-  ('test_user', 'test_user_2', current_timestamp);
-
-insert into
-  public.follow (follower_id, followee_id, timestamp)
-values
-  ('test_user', 'test_user_3', current_timestamp);
-
-insert into
-  public.follow (follower_id, followee_id, timestamp)
-values
-  ('test_user_2', 'test_user', current_timestamp);
-
-insert into
-  public.follow (follower_id, followee_id, timestamp)
-values
-  ('test_user_3', 'test_user', current_timestamp);
+  (
+    'test_user',
+    'example.com',
+    'test_user_2',
+    'example.com'
+  ),
+  (
+    'test_user',
+    'example.com',
+    'test_user_3',
+    'example.com'
+  ),
+  (
+    'test_user_2',
+    'example.com',
+    'test_user',
+    'example.com'
+  ),
+  (
+    'test_user_3',
+    'example.com',
+    'test_user',
+    'example.com'
+  );

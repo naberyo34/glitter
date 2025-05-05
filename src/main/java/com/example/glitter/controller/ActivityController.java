@@ -34,7 +34,7 @@ public class ActivityController {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       }) })
   @GetMapping("/{id}")
-  public Activity getActivityById(@PathVariable Long id) {
+  public Activity getActivityById(@PathVariable String id) {
     return activityPubService.getActivityFromPost(id)
         .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
   }

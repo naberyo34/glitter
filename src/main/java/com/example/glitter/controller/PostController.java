@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequest;
+import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.service.ActivityPubService;
 import com.example.glitter.service.PostWithAuthorService;
 import com.example.glitter.service.SessionUserService;
@@ -37,16 +38,16 @@ public class PostController {
   @Autowired
   private ActivityPubService activityPubService;
 
-  @Operation(summary = "IDから投稿を取得", description = "IDから投稿を取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Note形式でJSONを返します。", responses = {
+  @Operation(summary = "IDから投稿を取得", description = "IDからユーザー情報を含む投稿を取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Note形式でJSONを返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = PostDto.class)),
+          @Content(mediaType = "application/json", schema = @Schema(implementation = PostWithAuthor.class)),
           @Content(mediaType = "application/activity+json", schema = @Schema(implementation = Note.class))
       }),
       @ApiResponse(responseCode = "404", description = "投稿が見つからないとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)),
       }) })
   @GetMapping("/{id}")
-  public ResponseEntity<?> findById(@PathVariable Long id, HttpServletRequest request) throws ErrorResponseException {
+  public ResponseEntity<?> findById(@PathVariable String id, HttpServletRequest request) throws ErrorResponseException {
     // Accept ヘッダーを確認
     String acceptHeader = request.getHeader("Accept");
     boolean isActivityPubRequest = acceptHeader != null && acceptHeader.contains("application/activity+json");
@@ -60,7 +61,7 @@ public class PostController {
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
     } else {
       // 通常の投稿情報を返す
-      return ResponseEntity.ok(postWithAuthorService.findById(id)
+      return ResponseEntity.ok(postWithAuthorService.findByPostId(id)
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND)));
     }
   }

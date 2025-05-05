@@ -42,8 +42,8 @@ public class WebFingerServiceTest {
   void 正しいリソースを渡すと適切なJRDが返る() {
     String resource = "acct:" + TEST_USER_ID + "@" + TEST_DOMAIN;
     User mockUser = new User();
-    mockUser.setId(TEST_USER_ID);
-    when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(mockUser));
+    mockUser.setUserId(TEST_USER_ID);
+    when(userRepository.findByUserIdAndDomain(TEST_USER_ID, TEST_DOMAIN)).thenReturn(Optional.of(mockUser));
 
     Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isPresent());
@@ -73,7 +73,7 @@ public class WebFingerServiceTest {
   @Test
   void 存在しないユーザーのリソースを渡すとEmptyが返る() {
     String resource = "acct:not_exist_user@" + TEST_DOMAIN;
-    when(userRepository.findById("not_exist_user")).thenReturn(Optional.empty());
+    when(userRepository.findByUserIdAndDomain("not_exist_user", TEST_DOMAIN)).thenReturn(Optional.empty());
 
     Optional<WebFingerResponse> jrdOpt = webFingerService.getJrd(resource);
     assertTrue(jrdOpt.isEmpty());

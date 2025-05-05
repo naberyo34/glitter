@@ -10,9 +10,11 @@
     <javaModelGenerator targetPackage="com.example.glitter.generated" targetProject="src/main/java" />
     <javaClientGenerator type="XMLMAPPER" targetPackage="com.example.glitter.generated"
       targetProject="src/main/java" />
-    <table schema="public" tableName="user" />
+    <table schema="public" tableName="user">
+      <generatedKey column="uuid" sqlStatement="JDBC" />
+    </table>
     <table schema="public" tableName="post">
-      <generatedKey column="id" sqlStatement="JDBC" />
+      <generatedKey column="uuid" sqlStatement="JDBC" />
     </table>
     <table schema="public" tableName="follow" />
   </context>

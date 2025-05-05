@@ -53,16 +53,16 @@ public class ActivityControllerTest {
 
   @Test
   void 投稿IDからActivityが取得できる() throws Exception {
-    mockMvc.perform(get("/activity/1").accept("application/activity+json"))
+    mockMvc.perform(get("/activity/uuid_1").accept("application/activity+json"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(apiUrl + "/activity/1"))
+        .andExpect(jsonPath("$.id").value(apiUrl + "/activity/uuid_1"))
         .andExpect(jsonPath("$.type").value("Create"))
-        .andExpect(jsonPath("$.object.id").value(apiUrl + "/post/1"));
+        .andExpect(jsonPath("$.object.id").value(apiUrl + "/post/uuid_1"));
   }
 
   @Test
   void 存在しない投稿IDを渡すと404が返る() throws Exception {
-    mockMvc.perform(get("/activity/999").accept("application/activity+json"))
+    mockMvc.perform(get("/activity/uuid_999").accept("application/activity+json"))
         .andExpect(status().isNotFound());
   }
 }

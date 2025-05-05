@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.Post.PostResponse;
+import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -100,6 +100,11 @@ public class UserControllerTest {
   }
 
   @Test
+  void 存在しないユーザーを取得したとき404が返る() throws Exception {
+    mockMvc.perform(get("/user/not_exist_user")).andExpect(status().isNotFound());
+  }
+
+  @Test
   void ActivityPubとしてOutboxを取得したとき正しいOrderedCollectionJSONが返る() throws Exception {
     mockMvc.perform(get("/user/test_user/outbox"))
         .andExpect(status().isOk())
@@ -117,18 +122,13 @@ public class UserControllerTest {
   }
 
   @Test
-  void 存在しないユーザーを取得したとき404が返る() throws Exception {
-    mockMvc.perform(get("/user/not_exist_user")).andExpect(status().isNotFound());
-  }
-
-  @Test
   void 投稿しているユーザーの投稿を取得したとき投稿のリストが返る() throws Exception {
     mockMvc.perform(get("/user/test_user/post")).andExpect(status().isOk()).andExpect((result) -> {
       String content = result.getResponse().getContentAsString();
-      List<PostResponse> posts = Arrays.asList(objectMapper.readValue(content, PostResponse[].class));
-      PostResponse post = posts.get(0);
+      List<PostWithAuthor> posts = Arrays.asList(objectMapper.readValue(content, PostWithAuthor[].class));
+      PostWithAuthor post = posts.get(0);
       // 投稿日降順のため、「テスト投稿2」が期待される
-      assertEquals(post.getContent(), "テスト投稿2");
+      assertEquals("テスト投稿2", post.getContent());
     });
   }
 
@@ -136,7 +136,7 @@ public class UserControllerTest {
   void 投稿していないユーザーの投稿を取得したとき空のリストが返る() throws Exception {
     mockMvc.perform(get("/user/test_user_2/post")).andExpect(status().isOk()).andExpect((result) -> {
       String content = result.getResponse().getContentAsString();
-      assertEquals(content, "[]");
+      assertEquals("[]", content);
     });
   }
 

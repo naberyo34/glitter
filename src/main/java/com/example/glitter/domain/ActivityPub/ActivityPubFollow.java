@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(Include.NON_NULL)
-public class Follow extends ActivityPubObject {
+public class ActivityPubFollow extends ActivityPubObject {
   @Schema(description = "オブジェクトのタイプ", example = "Follow", requiredMode = Schema.RequiredMode.REQUIRED)
   private final String type = "Follow";
 

@@ -23,7 +23,13 @@ public class UserResponse {
   @Pattern(regexp = "^[a-zA-Z0-9_]+$")
   @Size(min = 1, max = 20)
   @Schema(description = "ユーザー ID", example = "example", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String id;
+  private String userId;
+
+  @Schema(description = "ユーザーのドメイン", example = "example.com", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String domain;
+
+  @Schema(description = "ユーザーの Actor URL", example = "https://example.com/user/example", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String actorUrl;
 
   @NotBlank
   @Size(min = 1, max = 40)
@@ -37,6 +43,7 @@ public class UserResponse {
   private String icon;
 
   public static UserResponse fromEntity(User user) {
-    return new UserResponse(user.getId(), user.getUsername(), user.getProfile(), user.getIcon());
+    return new UserResponse(user.getUserId(), user.getDomain(), user.getActorUrl(), user.getUsername(),
+        user.getProfile(), user.getIcon());
   }
 }

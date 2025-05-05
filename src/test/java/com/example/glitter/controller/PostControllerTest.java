@@ -23,7 +23,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequest;
-import com.example.glitter.domain.Post.PostResponse;
+import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -64,29 +64,29 @@ public class PostControllerTest {
 
   @Test
   void IDから投稿を取得できる() throws Exception {
-    mockMvc.perform(get("/post/1"))
+    mockMvc.perform(get("/post/uuid_1"))
         .andExpect(status().isOk()).andExpect(result -> {
           String content = result.getResponse().getContentAsString();
-          PostResponse resultPostResponseDto = objectMapper.readValue(content, PostResponse.class);
-          assertEquals(resultPostResponseDto.getId(), 1L);
+          PostWithAuthor resultPostResponse = objectMapper.readValue(content, PostWithAuthor.class);
+          assertEquals("uuid_1", resultPostResponse.getUuid());
         });
   }
 
   @Test
   void ActivityPubとして投稿を取得したとき正しいNoteJSONが返る() throws Exception {
-    mockMvc.perform(get("/post/1")
+    mockMvc.perform(get("/post/uuid_1")
         .accept(MediaType.parseMediaType("application/activity+json")))
         .andExpect(status().isOk()).andExpect(result -> {
           String content = result.getResponse().getContentAsString();
-          Note resultPostDto = objectMapper.readValue(content, Note.class);
-          assertEquals(resultPostDto.getId(), apiUrl + "/post/1");
-          assertEquals(resultPostDto.getType(), "Note");
+          Note resultNote = objectMapper.readValue(content, Note.class);
+          assertEquals(apiUrl + "/post/uuid_1", resultNote.getId());
+          assertEquals("Note", resultNote.getType());
         });
   }
 
   @Test
   void IDから投稿が見つからないとき404が返る() throws Exception {
-    mockMvc.perform(get("/post/9999"))
+    mockMvc.perform(get("/post/uuid_999"))
         .andExpect(status().isNotFound());
   }
 
@@ -100,7 +100,7 @@ public class PostControllerTest {
         .andExpect(status().isOk()).andExpect(result -> {
           String content = result.getResponse().getContentAsString();
           PostDto resultPostDto = objectMapper.readValue(content, PostDto.class);
-          assertEquals(resultPostDto.getContent(), "new post");
+          assertEquals("new post", resultPostDto.getContent());
         });
   }
 

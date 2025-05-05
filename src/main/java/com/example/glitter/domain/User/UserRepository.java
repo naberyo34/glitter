@@ -19,32 +19,25 @@ public class UserRepository {
   private UserMapper userMapper;
 
   /**
-   * ID からユーザーを取得する
+   * ユーザー ID とドメインからユーザーを取得する
    * 
-   * @param id
-   * @return 合致するユーザー (存在しない場合は null)
+   * @param userId
+   * @param userDomain
+   * @return
    */
-  public Optional<User> findById(String id) {
-    return userMapper.selectByPrimaryKey(id);
+  public Optional<User> findByUserIdAndDomain(String userId, String userDomain) {
+    return userMapper.selectOne(c -> c.where(UserDynamicSqlSupport.userId, isEqualTo(userId))
+        .and(UserDynamicSqlSupport.domain, isEqualTo(userDomain)));
   }
 
   /**
-   * メールアドレスからユーザーを取得する
+   * ユーザーを更新する
    * 
-   * @param email
-   * @return 合致するユーザー (存在しない場合は null)
+   * @param user
    */
-  public Optional<User> findByEmail(String email) {
-    return userMapper.selectOne((c) -> c.where(UserDynamicSqlSupport.email, isEqualTo(email)));
-  }
-
-  /**
-   * ユーザーの総数を取得する
-   * 
-   * @return ユーザーの総数
-   */
-  public long countAll() {
-    return userMapper.count((c) -> c);
+  public User update(User user) {
+    userMapper.updateByPrimaryKey(user);
+    return user;
   }
 
   /**
@@ -66,22 +59,12 @@ public class UserRepository {
   }
 
   /**
-   * ユーザーを追加する
+   * ユーザーの総数を取得する
+   * NodeInfo で使っている
    * 
-   * @param user
+   * @return ユーザーの総数
    */
-  public User insert(User user) {
-    userMapper.insert(user);
-    return user;
-  }
-
-  /**
-   * ユーザーを更新する
-   * 
-   * @param user
-   */
-  public User update(User user) {
-    userMapper.updateByPrimaryKey(user);
-    return user;
+  public long countAll() {
+    return userMapper.count((c) -> c);
   }
 }

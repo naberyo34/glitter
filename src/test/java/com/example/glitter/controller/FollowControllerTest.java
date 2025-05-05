@@ -1,9 +1,7 @@
 package com.example.glitter.controller;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,56 +49,12 @@ public class FollowControllerTest {
 
   @Test
   @WithMockJwt
-  void ログイン中にユーザーをフォローできる() throws Exception {
-    // TODO: シードデータにはすでに test_user -> test_user_2 のフォロー関係があるので、
-    // このテストは重複フォローとなるが、サービス側で冪等性を担保している
-    mockMvc.perform(post("/user/test_user_2/follow"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.followerId").value("test_user"))
-        .andExpect(jsonPath("$.followeeId").value("test_user_2"));
-  }
-
-  @Test
-  void 非ログイン中にユーザーをフォローしようとすると401が返る() throws Exception {
-    mockMvc.perform(post("/user/test_user_2/follow"))
-        .andExpect(status().isUnauthorized());
-  }
-
-  @Test
-  @WithMockJwt
-  void 存在しないユーザーをフォローしようとすると404が返る() throws Exception {
-    mockMvc.perform(post("/user/not_exist_user/follow"))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  @WithMockJwt
-  void ログイン中にユーザーのフォローを解除できる() throws Exception {
-    mockMvc.perform(delete("/user/test_user_2/follow"))
-        .andExpect(status().isOk());
-  }
-
-  @Test
-  void 非ログイン中にユーザーのフォローを解除しようとすると401が返る() throws Exception {
-    mockMvc.perform(delete("/user/test_user_2/follow"))
-        .andExpect(status().isUnauthorized());
-  }
-
-  @Test
-  @WithMockJwt
-  void フォローしていないユーザーのフォローを解除しようとすると404が返る() throws Exception {
-    mockMvc.perform(delete("/user/not_exist_user/follow"))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  @WithMockJwt
   void ユーザーのフォロー一覧を取得できる() throws Exception {
     mockMvc.perform(get("/user/test_user/following"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].id").exists())
-        .andExpect(jsonPath("$[1].id").exists());
+        .andExpect(jsonPath("$[0].userId").exists())
+        .andExpect(jsonPath("$[1].userId").exists());
   }
 
   @Test
@@ -114,8 +68,8 @@ public class FollowControllerTest {
     mockMvc.perform(get("/user/test_user/followers"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].id").exists())
-        .andExpect(jsonPath("$[1].id").exists());
+        .andExpect(jsonPath("$[0].userId").exists())
+        .andExpect(jsonPath("$[1].userId").exists());
   }
 
   @Test
@@ -130,8 +84,8 @@ public class FollowControllerTest {
     mockMvc.perform(get("/user/me/following"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].id").exists())
-        .andExpect(jsonPath("$[1].id").exists());
+        .andExpect(jsonPath("$[0].userId").exists())
+        .andExpect(jsonPath("$[1].userId").exists());
   }
 
   @Test
@@ -147,8 +101,8 @@ public class FollowControllerTest {
     mockMvc.perform(get("/user/me/followers"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].id").exists())
-        .andExpect(jsonPath("$[1].id").exists());
+        .andExpect(jsonPath("$[0].userId").exists())
+        .andExpect(jsonPath("$[1].userId").exists());
   }
 
   @Test

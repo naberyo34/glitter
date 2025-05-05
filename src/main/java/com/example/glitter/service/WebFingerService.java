@@ -53,7 +53,7 @@ public class WebFingerService {
     }
 
     // ユーザーの存在確認
-    return userRepository.findById(userId).map(_ -> {
+    return userRepository.findByUserIdAndDomain(userId, domain).map(_ -> {
       // JRD (JSON Resource Descriptor) を構築
       Link link = Link.builder()
           .rel("self")

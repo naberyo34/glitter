@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,19 +50,20 @@ public class FollowRepositoryTest {
   void フォロー情報を追加できる() {
     Follow follow = new Follow();
     follow.setFollowerId("test_user_2");
+    follow.setFollowerDomain("example.com");
     follow.setFolloweeId("test_user_3");
-    follow.setTimestamp(new Date());
+    follow.setFolloweeDomain("example.com");
 
-    Follow saved = followRepository.insert(follow);
+    Follow result = followRepository.insert(follow);
 
-    assertThat(saved).isNotNull();
-    assertEquals("test_user_2", saved.getFollowerId());
-    assertEquals("test_user_3", saved.getFolloweeId());
+    assertThat(result).isNotNull();
+    assertEquals("test_user_2", result.getFollowerId());
+    assertEquals("test_user_3", result.getFolloweeId());
   }
 
   @Test
   void ユーザーのフォロー一覧を取得できる() {
-    List<Follow> follows = followRepository.findFollowing("test_user");
+    List<Follow> follows = followRepository.findFollowing("test_user", "example.com");
 
     assertThat(follows).hasSize(2);
     assertThat(follows)
@@ -73,7 +73,7 @@ public class FollowRepositoryTest {
 
   @Test
   void ユーザーのフォロワー一覧を取得できる() {
-    List<Follow> followers = followRepository.findFollowers("test_user");
+    List<Follow> followers = followRepository.findFollowers("test_user", "example.com");
 
     assertThat(followers).hasSize(2);
     assertThat(followers)
@@ -83,23 +83,26 @@ public class FollowRepositoryTest {
 
   @Test
   void フォロー関係を削除できる() {
-    int deleted = followRepository.delete("test_user", "test_user_2");
+    int deleted = followRepository.delete("test_user", "example.com", "test_user_2", "example.com");
 
     assertEquals(1, deleted);
 
-    Optional<Follow> follow = followRepository.findByFollowerIdAndFolloweeId("test_user", "test_user_2");
+    Optional<Follow> follow = followRepository.findFollowRelation("test_user", "example.com", "test_user_2",
+        "example.com");
     assertTrue(follow.isEmpty());
   }
 
   @Test
   void 特定のフォロー関係を検索できる() {
-    Optional<Follow> found = followRepository.findByFollowerIdAndFolloweeId("test_user", "test_user_2");
+    Optional<Follow> found = followRepository.findFollowRelation("test_user", "example.com", "test_user_2",
+        "example.com");
 
     assertTrue(found.isPresent());
     assertEquals("test_user", found.get().getFollowerId());
     assertEquals("test_user_2", found.get().getFolloweeId());
 
-    Optional<Follow> notFound = followRepository.findByFollowerIdAndFolloweeId("test_user", "not_exist");
+    Optional<Follow> notFound = followRepository.findFollowRelation("test_user", "example.com", "not_exist",
+        "example.com");
     assertTrue(notFound.isEmpty());
   }
 }

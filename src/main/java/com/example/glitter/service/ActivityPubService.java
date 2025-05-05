@@ -32,10 +32,10 @@ public class ActivityPubService {
 
   @Value("${env.api-url}")
   private String apiUrl;
+  @Value("${env.domain}")
+  private String domain;
   @Value("${env.storage-url}")
   private String storageUrl;
-  @Value("${env.storage-bucket-name}")
-  private String bucketName;
 
   /**
    * ユーザー ID から ActivityPub Actor オブジェクトを取得する
@@ -44,7 +44,7 @@ public class ActivityPubService {
    * @return Actor オブジェクト
    */
   public Optional<Actor> getActorObject(String userId) {
-    return userRepository.findById(userId).map(user -> createActorFromUser(user));
+    return userRepository.findByUserIdAndDomain(userId, domain).map(user -> createActorFromUser(user));
   }
 
   /**
@@ -53,8 +53,8 @@ public class ActivityPubService {
    * @param postId
    * @return Note オブジェクト
    */
-  public Optional<Note> getNoteObject(Long postId) {
-    return postRepository.findById(postId).map(post -> {
+  public Optional<Note> getNoteObject(String postId) {
+    return postRepository.findByUuid(postId).map(post -> {
       return createNoteFromPost(post);
     });
   }
@@ -65,9 +65,9 @@ public class ActivityPubService {
    * @param postId
    * @return
    */
-  public Optional<Activity> getActivityFromPost(Long postId) {
-    return postRepository.findById(postId).map(post -> {
-      User user = userRepository.findById(post.getUserId()).orElseThrow();
+  public Optional<Activity> getActivityFromPost(String postId) {
+    return postRepository.findByUuid(postId).map(post -> {
+      User user = userRepository.findByUserIdAndDomain(post.getUserId(), post.getDomain()).orElseThrow();
       Note note = createNoteFromPost(post);
       Activity activity = createActivityFromNote(user, note);
       return activity;
@@ -81,8 +81,8 @@ public class ActivityPubService {
    * @return Outbox オブジェクト
    */
   public Optional<OrderedCollection> getOutboxObject(String userId) {
-    return userRepository.findById(userId).map(user -> {
-      List<Post> posts = postRepository.findPostsByUserId(userId);
+    return userRepository.findByUserIdAndDomain(userId, domain).map(user -> {
+      List<Post> posts = postRepository.findPostsByUserIdAndDomain(userId, domain);
       List<Note> notes = posts.stream()
           .map(post -> createNoteFromPost(post))
           .toList();
@@ -99,10 +99,10 @@ public class ActivityPubService {
   private Actor createActorFromUser(User user) {
     // Actorオブジェクトを構築
     Actor.ActorBuilder builder = Actor.builder()
-        .id(apiUrl + "/user/" + user.getId())
-        .preferredUsername(user.getId())
-        .inbox(apiUrl + "/user/" + user.getId() + "/inbox")
-        .outbox(apiUrl + "/user/" + user.getId() + "/outbox")
+        .id(apiUrl + "/user/" + user.getUserId())
+        .preferredUsername(user.getUserId())
+        .inbox(apiUrl + "/user/" + user.getUserId() + "/inbox")
+        .outbox(apiUrl + "/user/" + user.getUserId() + "/outbox")
         .name(user.getUsername());
 
     // プロフィール情報があれば追加
@@ -130,7 +130,7 @@ public class ActivityPubService {
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     String userId = post.getUserId();
     String actorUrl = apiUrl + "/user/" + userId;
-    String noteUrl = apiUrl + "/post/" + post.getId();
+    String noteUrl = apiUrl + "/post/" + post.getUuid();
 
     return Note.builder()
         .id(noteUrl)
@@ -149,7 +149,7 @@ public class ActivityPubService {
    * @return OrderedCollection オブジェクト
    */
   private OrderedCollection createOutboxFromPosts(User user, List<Note> notes) {
-    String outboxUrl = apiUrl + "/user/" + user.getId() + "/outbox";
+    String outboxUrl = apiUrl + "/user/" + user.getUserId() + "/outbox";
 
     // OrderedCollection オブジェクトを作成
     OrderedCollection.OrderedCollectionBuilder<?, ?> builder = OrderedCollection.builder()
@@ -177,7 +177,7 @@ public class ActivityPubService {
    * @return Activityオブジェクト
    */
   private Activity createActivityFromNote(User user, Note note) {
-    String actorUrl = apiUrl + "/user/" + user.getId();
+    String actorUrl = apiUrl + "/user/" + user.getUserId();
 
     // TODO: 雑
     String postId = note.getId().substring(note.getId().lastIndexOf("/") + 1);

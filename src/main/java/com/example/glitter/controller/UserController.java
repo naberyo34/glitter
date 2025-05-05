@@ -3,6 +3,7 @@ package com.example.glitter.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -19,7 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
-import com.example.glitter.domain.Post.PostResponse;
+import com.example.glitter.domain.Post.PostWithAuthor;
+import com.example.glitter.domain.User.UserNotFoundException;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.service.ActivityPubService;
@@ -45,6 +47,9 @@ public class UserController {
   @Autowired
   private ActivityPubService activityPubService;
 
+  @Value("${env.domain}")
+  private String domain;
+
   @Operation(summary = "IDからユーザーを取得", description = "IDからユーザーを取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Actor形式でJSONを返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class)),
@@ -68,7 +73,7 @@ public class UserController {
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
     } else {
       // 通常のユーザー情報を返す
-      return ResponseEntity.ok(userRepository.findById(id)
+      return ResponseEntity.ok(userRepository.findByUserIdAndDomain(id, domain)
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND)));
     }
   }
@@ -91,16 +96,20 @@ public class UserController {
 
   @Operation(summary = "ユーザーの投稿を全件取得", description = "ユーザーの投稿を全件取得します。ユーザー自体が存在しない場合は404、ユーザーが1件も投稿を持たない場合は空配列を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostResponse.class))),
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostWithAuthor.class))),
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからないとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       }) })
   @GetMapping("/{id}/post")
-  public List<PostResponse> getUserPosts(@PathVariable String id) throws ErrorResponseException {
-    // ユーザーの存在判定
-    userRepository.findById(id).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND));
-    return postWithAuthorService.findPostsByUserId(id);
+  public List<PostWithAuthor> getUserPosts(@PathVariable String id) throws ErrorResponseException {
+    try {
+      return postWithAuthorService.findPostsByUserIdAndDomain(id, domain);
+    } catch (UserNotFoundException e) {
+      throw new ErrorResponseException(HttpStatus.NOT_FOUND, e);
+    } catch (Exception e) {
+      throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+    }
   }
 
   @Operation(summary = "セッションユーザーを取得", description = "セッションユーザーを取得します。ログインしていない場合は 401 が返ります。通常発生しませんが、ログインしているにもかかわらずユーザーのデータが見つからない場合、404 ではなく null を返します。", responses = {

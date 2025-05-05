@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.glitter.domain.Follow.FollowRepository;
+import com.example.glitter.domain.User.UserNotFoundException;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.User.UserResponse;
 import com.example.glitter.generated.Follow;
@@ -19,6 +21,9 @@ public class FollowUserListService {
   @Autowired
   private UserRepository userRepository;
 
+  @Value("${env.domain}")
+  private String domain;
+
   /**
    * ユーザーのフォロー一覧を取得する
    * 
@@ -26,13 +31,14 @@ public class FollowUserListService {
    * @return フォロー一覧
    */
   public List<UserResponse> getFollowing(String userId) {
-    List<Follow> follows = followRepository.findFollowing(userId);
-    // ユーザーが存在しない場合例外を投げる
-    userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    // ユーザーの存在判定
+    userRepository.findByUserIdAndDomain(userId, domain)
+        .orElseThrow(() -> new UserNotFoundException());
+    List<Follow> follows = followRepository.findFollowing(userId, domain);
 
     return follows.stream()
         .map(follow -> {
-          User followee = userRepository.findById(follow.getFolloweeId())
+          User followee = userRepository.findByUserIdAndDomain(follow.getFolloweeId(), follow.getFolloweeDomain())
               .orElseThrow();
           return UserResponse.fromEntity(followee);
         })
@@ -46,13 +52,14 @@ public class FollowUserListService {
    * @return フォロワー一覧
    */
   public List<UserResponse> getFollowers(String userId) {
-    List<Follow> followers = followRepository.findFollowers(userId);
-    // ユーザーが存在しない場合例外を投げる
-    userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    // ユーザーの存在判定
+    userRepository.findByUserIdAndDomain(userId, domain)
+        .orElseThrow(() -> new UserNotFoundException());
+    List<Follow> followers = followRepository.findFollowers(userId, domain);
 
     return followers.stream()
         .map(follow -> {
-          User follower = userRepository.findById(follow.getFollowerId())
+          User follower = userRepository.findByUserIdAndDomain(follow.getFollowerId(), follow.getFollowerDomain())
               .orElseThrow();
           return UserResponse.fromEntity(follower);
         })
