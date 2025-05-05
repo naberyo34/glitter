@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRepository;
 import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.domain.User.UserNotFoundException;
@@ -34,7 +35,7 @@ public class PostWithAuthorService {
     }
     Post post = postOpt.get();
     User user = userRepository.findByUserIdAndDomain(post.getUserId(), post.getDomain()).orElseThrow();
-    return Optional.of(PostWithAuthor.fromEntity(post, user));
+    return Optional.of(PostWithAuthor.fromEntity(PostDto.fromEntity(post), user));
   }
 
   /**
@@ -50,7 +51,7 @@ public class PostWithAuthorService {
     Stream<Post> posts = postRepository.findPostsByUserIdAndDomain(userId, userDomain).stream();
     return posts.map(post -> {
       User user = userRepository.findByUserIdAndDomain(post.getUserId(), post.getDomain()).orElseThrow();
-      return PostWithAuthor.fromEntity(post, user);
+      return PostWithAuthor.fromEntity(PostDto.fromEntity(post), user);
     }).toList();
   }
 }
