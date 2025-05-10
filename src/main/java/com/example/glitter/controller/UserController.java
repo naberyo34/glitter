@@ -24,7 +24,7 @@ import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.domain.User.UserNotFoundException;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.User.UserResponse;
-import com.example.glitter.service.ActivityPubService;
+import com.example.glitter.service.ActivityPubCreateService;
 import com.example.glitter.service.PostWithAuthorService;
 import com.example.glitter.service.SessionUserService;
 
@@ -45,7 +45,7 @@ public class UserController {
   @Autowired
   private PostWithAuthorService postWithAuthorService;
   @Autowired
-  private ActivityPubService activityPubService;
+  private ActivityPubCreateService activityCreateService;
 
   @Value("${env.domain}")
   private String domain;
@@ -66,7 +66,7 @@ public class UserController {
 
     if (isActivityPubRequest) {
       // ActivityPub Actorとしてユーザー情報を返す
-      return activityPubService.getActorObject(id)
+      return activityCreateService.getActorObject(id)
           .map(actor -> ResponseEntity.ok()
               .contentType(MediaType.parseMediaType("application/activity+json"))
               .body(actor))
@@ -87,7 +87,7 @@ public class UserController {
       }) })
   @GetMapping("/{id}/outbox")
   public ResponseEntity<OrderedCollection> getOutbox(@PathVariable String id) throws ErrorResponseException {
-    return activityPubService.getOutboxObject(id)
+    return activityCreateService.getOutboxObject(id)
         .map(outbox -> ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/activity+json"))
             .body(outbox))

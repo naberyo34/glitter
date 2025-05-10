@@ -6,18 +6,16 @@ import com.example.glitter.generated.Post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 投稿 DTO
  */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class PostDto {
   @Schema(description = "投稿 uuid", example = "uuid", requiredMode = Schema.RequiredMode.REQUIRED)
   private String uuid;
@@ -46,6 +44,12 @@ public class PostDto {
   }
 
   public static PostDto fromEntity(Post post) {
-    return new PostDto(post.getUuid(), post.getUserId(), post.getDomain(), post.getContent(), post.getCreatedAt());
+    return PostDto.builder()
+        .uuid(post.getUuid())
+        .userId(post.getUserId())
+        .domain(post.getDomain())
+        .content(post.getContent())
+        .createdAt(post.getCreatedAt())
+        .build();
   }
 }

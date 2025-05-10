@@ -5,17 +5,13 @@ import java.util.Date;
 import com.example.glitter.generated.Follow;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * フォロー DTO
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class FollowDto {
   @Schema(description = "フォローする側の ID", example = "test_user", requiredMode = Schema.RequiredMode.REQUIRED)

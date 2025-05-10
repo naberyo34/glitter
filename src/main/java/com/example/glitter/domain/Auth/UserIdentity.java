@@ -1,16 +1,12 @@
 package com.example.glitter.domain.Auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * クライアントから受け取る認証情報の型定義
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class UserIdentity {
   @Schema(description = "ユーザー ID", example = "example", requiredMode = Schema.RequiredMode.REQUIRED)
   private String id;

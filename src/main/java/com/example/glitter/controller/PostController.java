@@ -18,7 +18,7 @@ import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequest;
 import com.example.glitter.domain.Post.PostWithAuthor;
-import com.example.glitter.service.ActivityPubService;
+import com.example.glitter.service.ActivityPubCreateService;
 import com.example.glitter.service.PostWithAuthorService;
 import com.example.glitter.service.SessionUserService;
 
@@ -36,7 +36,7 @@ public class PostController {
   @Autowired
   private SessionUserService sessionUserService;
   @Autowired
-  private ActivityPubService activityPubService;
+  private ActivityPubCreateService activityCreateService;
 
   @Operation(summary = "IDから投稿を取得", description = "IDからユーザー情報を含む投稿を取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Note形式でJSONを返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -54,7 +54,7 @@ public class PostController {
 
     if (isActivityPubRequest) {
       // ActivityPub Noteとして投稿情報を返す
-      return activityPubService.getNoteObject(id)
+      return activityCreateService.getNoteObject(id)
           .map(actor -> ResponseEntity.ok()
               .contentType(MediaType.parseMediaType("application/activity+json"))
               .body(actor))

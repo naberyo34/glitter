@@ -18,30 +18,29 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.example.glitter.domain.ActivityPub.Activity;
-import com.example.glitter.domain.ActivityPub.ActivityPubObject;
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
+import com.example.glitter.domain.ActivityPub.Actor.PublicKey;
 import com.example.glitter.domain.Post.PostRepository;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
 @ExtendWith(MockitoExtension.class)
-public class ActivityPubServiceTest {
+public class ActivityPubCreateServiceTest {
   @Mock
   private UserRepository userRepository;
   @Mock
   private PostRepository postRepository;
   @InjectMocks
-  private ActivityPubService activityPubService;
+  private ActivityPubCreateService activityCreateService;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(activityPubService, "apiUrl", "https://api.example.com");
-    ReflectionTestUtils.setField(activityPubService, "domain", "example.com");
-    ReflectionTestUtils.setField(activityPubService, "storageUrl", "https://storage.example.com");
+    ReflectionTestUtils.setField(activityCreateService, "apiUrl", "https://api.example.com");
+    ReflectionTestUtils.setField(activityCreateService, "domain", "example.com");
+    ReflectionTestUtils.setField(activityCreateService, "storageUrl", "https://storage.example.com");
   }
 
   @Test
@@ -58,7 +57,7 @@ public class ActivityPubServiceTest {
         .thenReturn(Optional.of(mockUser));
 
     // テスト実行
-    Optional<Actor> actorOpt = activityPubService.getActorObject(mockUser.getUserId());
+    Optional<Actor> actorOpt = activityCreateService.getActorObject(mockUser.getUserId());
 
     // 検証
     assertTrue(actorOpt.isPresent());
@@ -72,13 +71,18 @@ public class ActivityPubServiceTest {
     assertEquals("https://api.example.com/user/test_user/inbox", actor.getInbox());
     assertEquals("https://api.example.com/user/test_user/outbox", actor.getOutbox());
     assertEquals("https://storage.example.com/test_user/icon.jpg", actor.getIcon()[0]);
+
+    PublicKey publicKey = actor.getPublicKey();
+    assertEquals("https://api.example.com/user/test_user#main-key", publicKey.getId());
+    assertEquals("https://api.example.com/user/test_user", publicKey.getOwner());
+    assertTrue(publicKey.getPublicKeyPem().startsWith("-----BEGIN PUBLIC KEY-----"));
   }
 
   @Test
   void 存在しないユーザーIDを渡すとEmptyが返る() {
     when(userRepository.findByUserIdAndDomain("not_exist_user", "example.com")).thenReturn(Optional.empty());
 
-    Optional<Actor> actorOpt = activityPubService.getActorObject("not_exist_user");
+    Optional<Actor> actorOpt = activityCreateService.getActorObject("not_exist_user");
 
     assertTrue(actorOpt.isEmpty());
   }
@@ -96,7 +100,7 @@ public class ActivityPubServiceTest {
     when(postRepository.findByUuid(mockPost.getUuid())).thenReturn(Optional.of(mockPost));
 
     // テスト実行
-    Optional<Note> noteOpt = activityPubService.getNoteObject("uuid_1");
+    Optional<Note> noteOpt = activityCreateService.getNoteObject("uuid_1");
 
     // 検証
     assertTrue(noteOpt.isPresent());
@@ -111,47 +115,12 @@ public class ActivityPubServiceTest {
   void 存在しない投稿IDを渡すとEmptyが返る() {
     when(postRepository.findByUuid("uuid_999")).thenReturn(Optional.empty());
 
-    Optional<Note> noteOpt = activityPubService.getNoteObject("uuid_999");
+    Optional<Note> noteOpt = activityCreateService.getNoteObject("uuid_999");
     assertTrue(noteOpt.isEmpty());
   }
 
   @Test
-  void 存在する投稿IDを渡すと正しいActivityオブジェクトが返る() {
-    // モックの準備
-    Post mockPost = new Post();
-    mockPost.setUuid("uuid_1");
-    mockPost.setContent("テスト投稿");
-    mockPost.setUserId("test_user");
-    mockPost.setDomain("example.com");
-    mockPost.setCreatedAt(new Date());
-
-    User mockUser = new User();
-    mockUser.setUserId("test_user");
-    mockUser.setDomain("example.com");
-
-    when(postRepository.findByUuid(mockPost.getUuid())).thenReturn(Optional.of(mockPost));
-    when(userRepository.findByUserIdAndDomain(mockUser.getUserId(), mockUser.getDomain()))
-        .thenReturn(Optional.of(mockUser));
-
-    // テスト実行
-    Optional<Activity> activityOpt = activityPubService.getActivityFromPost("uuid_1");
-
-    // 検証
-    assertTrue(activityOpt.isPresent());
-    Activity activity = activityOpt.get();
-
-    assertEquals("https://api.example.com/activity/uuid_1", activity.getId());
-    assertEquals("Create", activity.getType());
-    assertEquals("https://api.example.com/user/test_user", activity.getActor());
-
-    Note note = (Note) activity.getObject();
-    assertEquals("Note", note.getType());
-    assertEquals("テスト投稿", note.getContent());
-    assertEquals("https://api.example.com/post/uuid_1", note.getId());
-  }
-
-  @Test
-  void 存在するユーザーIDを渡すと正しいOutboxオブジェクトが返る() {
+  void 投稿しているユーザーIDを渡すとtotalItemsを持ったoutboxオブジェクトが返る() {
     // モックの準備
     User mockUser = new User();
     mockUser.setUserId("test_user");
@@ -177,7 +146,7 @@ public class ActivityPubServiceTest {
     when(postRepository.findPostsByUserIdAndDomain(mockUser.getUserId(), mockUser.getDomain())).thenReturn(mockPosts);
 
     // テスト実行
-    Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject(mockUser.getUserId());
+    Optional<OrderedCollection> outboxOpt = activityCreateService.getOutboxObject(mockUser.getUserId());
 
     // 検証
     assertTrue(outboxOpt.isPresent());
@@ -186,23 +155,10 @@ public class ActivityPubServiceTest {
     assertEquals("https://api.example.com/user/test_user/outbox", outbox.getId());
     assertEquals("OrderedCollection", outbox.getType());
     assertEquals(2, outbox.getTotalItems());
-
-    assertTrue(outbox.getOrderedItems() != null && !outbox.getOrderedItems().isEmpty());
-    ActivityPubObject firstItem = outbox.getOrderedItems().get(0);
-    assertTrue(firstItem instanceof Activity);
-
-    Activity activity = (Activity) firstItem;
-    assertEquals("Create", activity.getType());
-    assertEquals("https://api.example.com/user/test_user", activity.getActor());
-    assertTrue(activity.getId().startsWith("https://api.example.com/activity/"));
-
-    Note note = (Note) activity.getObject();
-    assertEquals("Note", note.getType());
-    assertEquals("https://api.example.com/user/test_user", note.getAttributedTo());
   }
 
   @Test
-  void 投稿のないユーザーIDを渡すと空のOutboxオブジェクトが返る() {
+  void 投稿のないユーザーIDを渡すとtotalItems0件のオブジェクトが返る() {
     // モックの準備
     User mockUser = new User();
     mockUser.setUserId("test_user");
@@ -214,7 +170,7 @@ public class ActivityPubServiceTest {
     when(postRepository.findPostsByUserIdAndDomain(mockUser.getUserId(), mockUser.getDomain())).thenReturn(emptyPosts);
 
     // テスト実行
-    Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject(mockUser.getUserId());
+    Optional<OrderedCollection> outboxOpt = activityCreateService.getOutboxObject(mockUser.getUserId());
 
     // 検証
     assertTrue(outboxOpt.isPresent());
@@ -223,14 +179,13 @@ public class ActivityPubServiceTest {
     assertEquals("https://api.example.com/user/test_user/outbox", outbox.getId());
     assertEquals("OrderedCollection", outbox.getType());
     assertEquals(0, outbox.getTotalItems());
-    assertTrue(outbox.getOrderedItems() == null || outbox.getOrderedItems().isEmpty());
   }
 
   @Test
   void 存在しないユーザーIDのOutboxを取得するとEmptyが返る() {
     when(userRepository.findByUserIdAndDomain("not_exist_user", "example.com")).thenReturn(Optional.empty());
 
-    Optional<OrderedCollection> outboxOpt = activityPubService.getOutboxObject("not_exist_user");
+    Optional<OrderedCollection> outboxOpt = activityCreateService.getOutboxObject("not_exist_user");
 
     assertTrue(outboxOpt.isEmpty());
   }

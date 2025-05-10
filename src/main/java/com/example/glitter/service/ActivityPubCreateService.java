@@ -1,8 +1,12 @@
 package com.example.glitter.service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,8 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.glitter.domain.ActivityPub.Activity;
-import com.example.glitter.domain.ActivityPub.ActivityPubObject;
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
@@ -21,10 +23,10 @@ import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
 /**
- * ActivityPubService の実装
+ * Activity 関連オブジェクトを生成するサービス
  */
 @Service
-public class ActivityPubService {
+public class ActivityPubCreateService {
   @Autowired
   private UserRepository userRepository;
   @Autowired
@@ -60,21 +62,6 @@ public class ActivityPubService {
   }
 
   /**
-   * 投稿 ID から ActivityPub Activity オブジェクトを取得する
-   * 
-   * @param postId
-   * @return
-   */
-  public Optional<Activity> getActivityFromPost(String postId) {
-    return postRepository.findByUuid(postId).map(post -> {
-      User user = userRepository.findByUserIdAndDomain(post.getUserId(), post.getDomain()).orElseThrow();
-      Note note = createNoteFromPost(post);
-      Activity activity = createActivityFromNote(user, note);
-      return activity;
-    });
-  }
-
-  /**
    * ユーザー ID から ActivityPub Outbox オブジェクトを取得する
    * 
    * @param userId ユーザーID
@@ -97,13 +84,28 @@ public class ActivityPubService {
    * @return Actor オブジェクト
    */
   private Actor createActorFromUser(User user) {
-    // Actorオブジェクトを構築
+    // 公開鍵を取得
+    String publicKeyPem = "";
+    try {
+      publicKeyPem = new String(Files.readAllBytes(Paths.get("src/main/resources/certs/public.pem")),
+          StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException("公開鍵の読み込みに失敗しました", e);
+    }
+    String url = apiUrl + "/user/" + user.getUserId();
+    // Actor オブジェクトを構築
     Actor.ActorBuilder builder = Actor.builder()
-        .id(apiUrl + "/user/" + user.getUserId())
+        .id(url)
         .preferredUsername(user.getUserId())
-        .inbox(apiUrl + "/user/" + user.getUserId() + "/inbox")
-        .outbox(apiUrl + "/user/" + user.getUserId() + "/outbox")
-        .name(user.getUsername());
+        .inbox(url + "/inbox")
+        .outbox(url + "/outbox")
+        .name(user.getUsername())
+        .publicKey(
+            Actor.PublicKey.builder()
+                .id(url + "#main-key")
+                .owner(url)
+                .publicKeyPem(publicKeyPem)
+                .build());
 
     // プロフィール情報があれば追加
     if (user.getProfile() != null && !user.getProfile().isEmpty()) {
@@ -154,42 +156,10 @@ public class ActivityPubService {
     // OrderedCollection オブジェクトを作成
     OrderedCollection.OrderedCollectionBuilder<?, ?> builder = OrderedCollection.builder()
         .id(outboxUrl)
-        .totalItems(notes.size());
-
-    // Note を Activity に変換
-    if (!notes.isEmpty()) {
-      List<Activity> activities = new ArrayList<>();
-      notes.forEach(note -> {
-        Activity activity = createActivityFromNote(user, note);
-        activities.add(activity);
-      });
-      builder.orderedItems(new ArrayList<ActivityPubObject>(activities));
-    }
+        .totalItems(notes.size())
+        // TODO: outbox を真面目に参照している ActivityPub 実装は少ないようなので、今は totalItems だけ返しておく
+        .orderedItems(Collections.emptyList());
 
     return builder.build();
-  }
-
-  /**
-   * ノートから ActivityPub Activity オブジェクトを生成する
-   * 
-   * @param user ユーザー情報
-   * @param note ノート
-   * @return Activityオブジェクト
-   */
-  private Activity createActivityFromNote(User user, Note note) {
-    String actorUrl = apiUrl + "/user/" + user.getUserId();
-
-    // TODO: 雑
-    String postId = note.getId().substring(note.getId().lastIndexOf("/") + 1);
-    String activityUrl = apiUrl + "/activity/" + postId;
-    String published = note.getPublished();
-
-    return Activity.builder()
-        .id(activityUrl)
-        .type("Create")
-        .actor(actorUrl)
-        .object(note)
-        .published(published)
-        .build();
   }
 }

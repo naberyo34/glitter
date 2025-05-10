@@ -43,7 +43,13 @@ public class UserResponse {
   private String icon;
 
   public static UserResponse fromEntity(User user) {
-    return new UserResponse(user.getUserId(), user.getDomain(), user.getActorUrl(), user.getUsername(),
-        user.getProfile(), user.getIcon());
+    return UserResponse.builder()
+        .userId(user.getUserId())
+        .domain(user.getDomain())
+        .actorUrl(user.getActorUrl())
+        .username(user.getUsername())
+        .profile(user.getProfile())
+        .icon(user.getIcon())
+        .build();
   }
 }

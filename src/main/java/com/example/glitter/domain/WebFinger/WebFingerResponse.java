@@ -6,10 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * WebFinger プロトコルに準拠した、リソースの URI を返すためのクラス。
@@ -17,8 +15,6 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
 public class WebFingerResponse {
   @Schema(description = "acct (アクターエンドポイントを取得するために使う)", example = "acct:example@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -27,8 +23,6 @@ public class WebFingerResponse {
   
   @Data
   @Builder
-  @AllArgsConstructor
-  @NoArgsConstructor
   @JsonInclude(Include.NON_NULL)
   @Schema(description = "アクターエンドポイントを含むリンクの情報", requiredMode = Schema.RequiredMode.REQUIRED)
   public static class Link {

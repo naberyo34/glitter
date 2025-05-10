@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -17,11 +16,10 @@ import lombok.experimental.SuperBuilder;
  */
 @Data
 @SuperBuilder
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(Include.NON_NULL)
 public class Undo extends ActivityPubObject {
-  @Schema(description = "オブジェクトのタイプ", example = "undo", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(description = "オブジェクトのタイプ", example = "Undo", requiredMode = Schema.RequiredMode.REQUIRED)
   private final String type = "Undo";
 
   @Schema(description = "取り消しを申請する Actor Endpoint", example = "https://example.com/user/test_user", requiredMode = Schema.RequiredMode.REQUIRED)

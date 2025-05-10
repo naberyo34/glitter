@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -16,7 +15,6 @@ import lombok.experimental.SuperBuilder;
  */
 @Data
 @SuperBuilder
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
 public class ActivityPubObject {
