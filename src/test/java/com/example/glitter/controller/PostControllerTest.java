@@ -56,11 +56,11 @@ public class PostControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Value("${env.api-url}")
   private String apiUrl;
-
-  private ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void IDから投稿を取得できる() throws Exception {

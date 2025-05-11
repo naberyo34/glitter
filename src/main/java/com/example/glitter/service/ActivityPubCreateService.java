@@ -38,6 +38,8 @@ public class ActivityPubCreateService {
   private String domain;
   @Value("${env.storage-url}")
   private String storageUrl;
+  @Value("${env.public-key-path}")
+  private String publicKeyPath;
 
   /**
    * ユーザー ID から ActivityPub Actor オブジェクトを取得する
@@ -87,7 +89,7 @@ public class ActivityPubCreateService {
     // 公開鍵を取得
     String publicKeyPem = "";
     try {
-      publicKeyPem = new String(Files.readAllBytes(Paths.get("src/main/resources/certs/public.pem")),
+      publicKeyPem = new String(Files.readAllBytes(Paths.get(publicKeyPath)),
           StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException("公開鍵の読み込みに失敗しました", e);

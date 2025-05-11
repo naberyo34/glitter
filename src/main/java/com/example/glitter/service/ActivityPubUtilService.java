@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ import org.tomitribe.auth.signatures.Signer;
 
 import com.example.glitter.domain.ActivityPub.Accept;
 import com.example.glitter.domain.ActivityPub.ActivityPubFollow;
-import com.example.glitter.domain.ActivityPub.Actor;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -43,6 +42,11 @@ public class ActivityPubUtilService {
 
   @Autowired
   private RestTemplate restTemplate;
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Value("${env.private-key-path}")
+  private String privateKeyPath;
 
   /**
    * アクターエンドポイントに問い合わせて inbox の URL を取得する
@@ -55,22 +59,17 @@ public class ActivityPubUtilService {
     headers.setAccept(List.of(MediaType.parseMediaType("application/activity+json")));
     HttpEntity<Void> request = new HttpEntity<>(headers);
 
-    ResponseEntity<Actor> response = restTemplate.exchange(
+    ResponseEntity<JsonNode> response = restTemplate.exchange(
         actorUrl,
         HttpMethod.GET,
         request,
-        Actor.class);
+        JsonNode.class);
 
-    if (response.getStatusCode() != HttpStatus.OK) {
-      throw new RuntimeException("アクターの取得に失敗しました" + actorUrl);
+    JsonNode responseBody = response.getBody();
+    if (responseBody == null || !responseBody.has("inbox")) {
+      throw new RuntimeException("Inbox の URL が取得できません");
     }
-
-    Actor actor = response.getBody();
-    if (actor == null || actor.getInbox() == null) {
-      throw new RuntimeException("アクターに inbox の情報が含まれていません" + actorUrl);
-    }
-
-    return actor.getInbox();
+    return responseBody.get("inbox").asText();
   }
 
   /**
@@ -79,7 +78,7 @@ public class ActivityPubUtilService {
    * @param followeeId
    * @param follow
    */
-  public void acceptFollowRequest(String followeeId, ActivityPubFollow follow) throws Exception {
+  public ResponseEntity<JsonNode> acceptFollowRequest(String followeeId, ActivityPubFollow follow) throws Exception {
     try {
       Accept accept = Accept.builder()
           // ID は適当でいいらしい
@@ -90,41 +89,42 @@ public class ActivityPubUtilService {
       String followerActorUrl = follow.getActor();
       String followerInboxUrl = getInboxFromActor(followerActorUrl);
 
-      // ヘッダーの作成
-      String body = new ObjectMapper().writeValueAsString(accept);
+      // ヘッダーを作成して署名する
+      String body = objectMapper.writeValueAsString(accept);
       String digest = "SHA-256=" + Base64.getEncoder().encodeToString(
           MessageDigest.getInstance("SHA-256").digest(body.getBytes(StandardCharsets.UTF_8)));
-      Map<String, String> headerMap = new LinkedHashMap<>();
-      headerMap.put("host", followerInboxUrl);
-      headerMap.put("date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now(ZoneOffset.UTC)));
-      headerMap.put("digest", digest);
-      headerMap.put("content-type", "application/activity+json");
+      Map<String, String> headers = new LinkedHashMap<>();
+      String method = "post";
+      String requestUri = URI.create(followerInboxUrl).getRawPath();
+      headers.put("host", URI.create(followerInboxUrl).getHost());
+      headers.put("date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now(ZoneOffset.UTC)));
+      headers.put("digest", digest);
+      headers.put("content-type", "application/activity+json");
 
-      // 署名の作成
+      String keyId = apiUrl + "/user/" + followeeId + "#main-key";
       List<String> signedHeaders = Arrays.asList("(request-target)", "host", "date", "digest", "content-type");
       PrivateKey privateKey = loadPrivateKey();
-      String keyId = apiUrl + "/user/" + followeeId + "#main-key";
-      String method = "post";
-      Signature signature = new Signature(keyId, "hs2019", "hmac-sha256", null,  signedHeaders);
+      Signature signature = new Signature(keyId, "hs2019", "rsa-sha256", null, signedHeaders);
       Signer signer = new Signer(privateKey, signature);
-      String path = URI.create(followerInboxUrl).getRawPath();
-      Signature signed = signer.sign(method, path, headerMap);
-      String authorizationHeader = signed.getSignature();
-      
+      Signature signed = signer.sign(method, requestUri, headers);
 
       // フォローの承認を送り返す
+      String authorizationHeader = signed.toString();
+      String signatureHeader = authorizationHeader.substring("Signature ".length());
       HttpHeaders httpHeaders = new HttpHeaders();
-      headerMap.forEach(httpHeaders::set);
-      httpHeaders.set("Authorization", authorizationHeader);
-      httpHeaders.setContentType(MediaType.parseMediaType("application/activity+json"));
-      restTemplate.postForEntity(followerInboxUrl, body, String.class);
+      headers.forEach(httpHeaders::set);
+      httpHeaders.set("authorization", authorizationHeader);
+      httpHeaders.set("signature", signatureHeader);
+      HttpEntity<String> entity = new HttpEntity<>(body, httpHeaders);
+      ResponseEntity<JsonNode> response = restTemplate.postForEntity(followerInboxUrl, entity, JsonNode.class);
+      return response;
     } catch (Exception e) {
       throw new RuntimeException("フォローリクエストの承認に失敗しました", e);
     }
   }
 
   private PrivateKey loadPrivateKey() throws Exception {
-    String privateKeyPem = new String(Files.readAllBytes(Paths.get("src/main/resources/certs/private.pem")),
+    String privateKeyPem = new String(Files.readAllBytes(Paths.get(privateKeyPath)),
         StandardCharsets.UTF_8);
     String key = privateKeyPem
         .replace("-----BEGIN PRIVATE KEY-----", "")

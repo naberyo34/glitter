@@ -41,6 +41,7 @@ public class ActivityPubCreateServiceTest {
     ReflectionTestUtils.setField(activityCreateService, "apiUrl", "https://api.example.com");
     ReflectionTestUtils.setField(activityCreateService, "domain", "example.com");
     ReflectionTestUtils.setField(activityCreateService, "storageUrl", "https://storage.example.com");
+    ReflectionTestUtils.setField(activityCreateService, "publicKeyPath", "certs/public.pem");
   }
 
   @Test

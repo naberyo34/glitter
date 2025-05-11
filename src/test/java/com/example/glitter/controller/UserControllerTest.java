@@ -72,11 +72,12 @@ public class UserControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Value("${env.api-url}")
   private String apiUrl;
 
-  private ObjectMapper objectMapper = new ObjectMapper();
   private String EXAMPLE_IMAGE_FILE_PATH = "src/test/resources/static/images/example.jpg";
 
   @Test

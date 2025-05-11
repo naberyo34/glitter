@@ -39,5 +39,7 @@ env:
   minio-username: ${MINIO_USERNAME}
   minio-password: ${MINIO_PASSWORD}
   domain: ${DOMAIN}
+  public-key-path: ${PUBLIC_KEY_PATH}
+  private-key-path: ${PRIVATE_KEY_PATH}
   cognito-client-id: ${COGNITO_CLIENT_ID}
   cognito-client-secret: ${COGNITO_CLIENT_SECRET}
