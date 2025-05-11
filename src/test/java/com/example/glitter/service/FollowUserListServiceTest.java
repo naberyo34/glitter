@@ -18,7 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.glitter.domain.Follow.FollowRepository;
 import com.example.glitter.domain.User.UserRepository;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.User;
 
@@ -71,7 +71,7 @@ public class FollowUserListServiceTest {
     when(followRepository.findFollowing(mockUser.getUserId(), mockUser.getDomain())).thenReturn(mockFollows);
 
     // テスト実行
-    List<UserResponse> result = followUserListService.getFollowing(mockUser.getUserId());
+    List<UserDto> result = followUserListService.getFollowing(mockUser.getUserId());
 
     // 検証
     assertThat(result).hasSize(2);
@@ -114,7 +114,7 @@ public class FollowUserListServiceTest {
     when(followRepository.findFollowers(mockUser.getUserId(), mockUser.getDomain())).thenReturn(mockFollows);
 
     // テスト実行
-    List<UserResponse> result = followUserListService.getFollowers(mockUser.getUserId());
+    List<UserDto> result = followUserListService.getFollowers(mockUser.getUserId());
 
     // 検証
     assertThat(result).hasSize(2);

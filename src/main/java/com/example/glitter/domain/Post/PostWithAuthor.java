@@ -1,6 +1,6 @@
 package com.example.glitter.domain.Post;
 
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.generated.User;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class PostWithAuthor extends PostDto {
   @Schema(description = "ユーザー情報", requiredMode = Schema.RequiredMode.REQUIRED)
-  private UserResponse user;
+  private UserDto user;
 
   public static PostWithAuthor fromEntity(PostDto post, User user) {
     PostWithAuthor postResponseDto = PostWithAuthor.builder()  
@@ -27,7 +27,7 @@ public class PostWithAuthor extends PostDto {
       .userId(post.getUserId())
       .content(post.getContent())
       .createdAt(post.getCreatedAt())
-      .user(UserResponse.fromEntity(user))
+      .user(UserDto.fromEntity(user))
       .build();
     return postResponseDto;
   }

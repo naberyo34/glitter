@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.glitter.domain.User.UserNotFoundException;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.service.FollowUserListService;
 import com.example.glitter.service.SessionUserService;
 
@@ -35,14 +35,14 @@ public class FollowController {
 
   @Operation(summary = "ユーザーのフォロー一覧を取得", description = "指定したユーザーがフォローしているユーザー一覧を取得します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからない", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       })
   })
   @GetMapping("/user/{id}/following")
-  public List<UserResponse> getFollowing(@PathVariable String id) throws ErrorResponseException {
+  public List<UserDto> getFollowing(@PathVariable String id) throws ErrorResponseException {
     try {
       return followUserListService.getFollowing(id);
     } catch (UserNotFoundException e) {
@@ -54,14 +54,14 @@ public class FollowController {
 
   @Operation(summary = "ユーザーのフォロワー一覧を取得", description = "指定したユーザーをフォローしているユーザー一覧を取得します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからない", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
       })
   })
   @GetMapping("/user/{id}/followers")
-  public List<UserResponse> getFollowers(@PathVariable String id) throws ErrorResponseException {
+  public List<UserDto> getFollowers(@PathVariable String id) throws ErrorResponseException {
     try {
       return followUserListService.getFollowers(id);
     } catch (UserNotFoundException e) {
@@ -73,7 +73,7 @@ public class FollowController {
 
   @Operation(summary = "セッションユーザーのフォロー一覧を取得", description = "セッションユーザーがフォローしているユーザー一覧を取得します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       }),
       @ApiResponse(responseCode = "401", description = "認証エラー", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
@@ -81,7 +81,7 @@ public class FollowController {
   })
   @GetMapping("/user/me/following")
   @PreAuthorize("isAuthenticated()")
-  public List<UserResponse> getMyFollowing() throws ErrorResponseException {
+  public List<UserDto> getMyFollowing() throws ErrorResponseException {
     try {
       return sessionUserService.getFollowing();
     } catch (Exception e) {
@@ -91,7 +91,7 @@ public class FollowController {
 
   @Operation(summary = "セッションユーザーのフォロワー一覧を取得", description = "セッションユーザーをフォローしているユーザー一覧を取得します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       }),
       @ApiResponse(responseCode = "401", description = "認証エラー", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
@@ -99,7 +99,7 @@ public class FollowController {
   })
   @GetMapping("/user/me/followers")
   @PreAuthorize("isAuthenticated()")
-  public List<UserResponse> getMyFollowers() throws ErrorResponseException {
+  public List<UserDto> getMyFollowers() throws ErrorResponseException {
     try {
       return sessionUserService.getFollowers();
     } catch (Exception e) {

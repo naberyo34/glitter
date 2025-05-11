@@ -32,7 +32,7 @@ import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.example.glitter.domain.Post.PostWithAuthor;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.util.WithMockJwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -168,7 +168,7 @@ public class UserControllerTest {
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isOk()).andReturn();
 
-    UserResponse resultUser = objectMapper.readValue(result.getResponse().getContentAsString(), UserResponse.class);
+    UserDto resultUser = objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
     assertTrue(resultUser.getIcon().endsWith(".jpg"));
   }
 

@@ -40,7 +40,17 @@ public class Actor {
   private String outbox;
 
   @Schema(description = "アイコン画像", example = "https://example.com/bucketName/test_user/icon.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  private String[] icon;
+  private Icon icon;
+
+  @Data
+  @Builder
+  @JsonInclude(Include.NON_NULL)
+  public static class Icon {
+    @Schema(description = "アイコン画像の MIME タイプ", example = "Image", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String type;
+    @Schema(description = "アイコン画像の URL", example = "https://example.com/bucketName/test_user/icon.jpg", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String url;
+  }
 
   @Schema(description = "外部からのインデックスを許可するか。これが true でない場合 Misskey が認識しないらしい", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
   private final Boolean discoverable = true;

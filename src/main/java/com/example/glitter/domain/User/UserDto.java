@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserResponse {
+public class UserDto {
   @Pattern(regexp = "^[a-zA-Z0-9_]+$")
   @Size(min = 1, max = 20)
   @Schema(description = "ユーザー ID", example = "example", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -42,8 +42,19 @@ public class UserResponse {
   @Schema(description = "プロフィールアイコン", example = "/test_user/example.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private String icon;
 
-  public static UserResponse fromEntity(User user) {
-    return UserResponse.builder()
+  public User toEntity() {
+    User user = new User();
+    user.setUserId(userId);
+    user.setDomain(domain);
+    user.setActorUrl(actorUrl);
+    user.setUsername(username);
+    user.setProfile(profile);
+    user.setIcon(icon);
+    return user;
+  }
+
+  public static UserDto fromEntity(User user) {
+    return UserDto.builder()
         .userId(user.getUserId())
         .domain(user.getDomain())
         .actorUrl(user.getActorUrl())

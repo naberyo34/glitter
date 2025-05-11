@@ -25,8 +25,14 @@ public class FollowDto {
   @Schema(description = "フォロー日時", example = "2025-03-10T08:14:12.451+00:00", requiredMode = Schema.RequiredMode.REQUIRED)
   private Date createdAt;
 
-  public FollowDto toEntity() {
-    return new FollowDto(followerId, followeeDomain, followeeId, followerDomain, createdAt);
+  public Follow toEntity() {
+    Follow follow = new Follow();
+    follow.setFollowerId(followerId);
+    follow.setFollowerDomain(followerDomain);
+    follow.setFolloweeId(followeeId);
+    follow.setFolloweeDomain(followeeDomain);
+    follow.setCreatedAt(createdAt);
+    return follow;
   }
 
   public static FollowDto fromEntity(Follow follow) {

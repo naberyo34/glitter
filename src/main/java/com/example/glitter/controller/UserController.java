@@ -23,7 +23,7 @@ import com.example.glitter.domain.ActivityPub.OrderedCollection;
 import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.domain.User.UserNotFoundException;
 import com.example.glitter.domain.User.UserRepository;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.service.ActivityPubCreateService;
 import com.example.glitter.service.PostWithAuthorService;
 import com.example.glitter.service.SessionUserService;
@@ -52,7 +52,7 @@ public class UserController {
 
   @Operation(summary = "IDからユーザーを取得", description = "IDからユーザーを取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Actor形式でJSONを返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class)),
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class)),
           @Content(mediaType = "application/activity+json", schema = @Schema(implementation = Actor.class))
       }),
       @ApiResponse(responseCode = "404", description = "ユーザーが見つからないとき", content = {
@@ -114,7 +114,7 @@ public class UserController {
 
   @Operation(summary = "セッションユーザーを取得", description = "セッションユーザーを取得します。ログインしていない場合は 401 が返ります。通常発生しませんが、ログインしているにもかかわらずユーザーのデータが見つからない場合、404 ではなく null を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class))
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
       }),
       @ApiResponse(responseCode = "401", description = "ログインしていないとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
@@ -122,13 +122,13 @@ public class UserController {
   })
   @GetMapping("/me")
   @PreAuthorize("isAuthenticated()")
-  public UserResponse getSessionUser() throws ErrorResponseException {
+  public UserDto getSessionUser() throws ErrorResponseException {
     return sessionUserService.getMe();
   }
 
-  @Operation(summary = "アイコン画像の更新", description = "アイコン画像を更新します。ログインが必須です。成功時はアイコン画像のパス情報を含む userResponse を返します。", responses = {
+  @Operation(summary = "アイコン画像の更新", description = "アイコン画像を更新します。ログインが必須です。成功時はアイコン画像のパス情報を含む userDto を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class))
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
       }),
       @ApiResponse(responseCode = "401", description = "ログインしていないとき", content = {
           @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
@@ -140,7 +140,7 @@ public class UserController {
   // Put だと MultiPartFile が受け取れないため Post で実装
   @PostMapping("/me/icon")
   @PreAuthorize("isAuthenticated()")
-  public UserResponse updateIcon(@RequestParam("file") MultipartFile file) throws ErrorResponseException {
+  public UserDto updateIcon(@RequestParam("file") MultipartFile file) throws ErrorResponseException {
     try {
       return sessionUserService.updateIcon(file);
     } catch (Exception e) {

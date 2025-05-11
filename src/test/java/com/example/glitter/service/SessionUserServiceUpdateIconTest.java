@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.util.WithMockJwt;
 
 /**
@@ -70,7 +70,7 @@ public class SessionUserServiceUpdateIconTest {
     MultipartFile mockMultipartFile = new MockMultipartFile("file", "example.jpg", "image/jpeg",
         Files.readAllBytes(Path.of(EXAMPLE_IMAGE_FILE_PATH)));
 
-    UserResponse resultUser = sessionUserService.updateIcon(mockMultipartFile);
+    UserDto resultUser = sessionUserService.updateIcon(mockMultipartFile);
 
     assertNotNull(resultUser);
     assertTrue(resultUser.getIcon().endsWith(".jpg"));

@@ -116,7 +116,10 @@ public class ActivityPubCreateService {
 
     // アイコン情報があれば追加
     if (user.getIcon() != null && !user.getIcon().isEmpty()) {
-      builder.icon(new String[] { storageUrl + "/" + user.getIcon() });
+      builder.icon(Actor.Icon.builder()
+          .type("Image")
+          .url(storageUrl + "/" + user.getIcon())
+          .build());
     }
 
     return builder.build();

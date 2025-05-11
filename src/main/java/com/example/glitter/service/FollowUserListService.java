@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.glitter.domain.Follow.FollowRepository;
 import com.example.glitter.domain.User.UserNotFoundException;
 import com.example.glitter.domain.User.UserRepository;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.User;
 
@@ -30,7 +30,7 @@ public class FollowUserListService {
    * @param userId ユーザーID
    * @return フォロー一覧
    */
-  public List<UserResponse> getFollowing(String userId) {
+  public List<UserDto> getFollowing(String userId) {
     // ユーザーの存在判定
     userRepository.findByUserIdAndDomain(userId, domain)
         .orElseThrow(() -> new UserNotFoundException());
@@ -40,7 +40,7 @@ public class FollowUserListService {
         .map(follow -> {
           User followee = userRepository.findByUserIdAndDomain(follow.getFolloweeId(), follow.getFolloweeDomain())
               .orElseThrow();
-          return UserResponse.fromEntity(followee);
+          return UserDto.fromEntity(followee);
         })
         .collect(Collectors.toList());
   }
@@ -51,7 +51,7 @@ public class FollowUserListService {
    * @param userId ユーザーID
    * @return フォロワー一覧
    */
-  public List<UserResponse> getFollowers(String userId) {
+  public List<UserDto> getFollowers(String userId) {
     // ユーザーの存在判定
     userRepository.findByUserIdAndDomain(userId, domain)
         .orElseThrow(() -> new UserNotFoundException());
@@ -61,7 +61,7 @@ public class FollowUserListService {
         .map(follow -> {
           User follower = userRepository.findByUserIdAndDomain(follow.getFollowerId(), follow.getFollowerDomain())
               .orElseThrow();
-          return UserResponse.fromEntity(follower);
+          return UserDto.fromEntity(follower);
         })
         .collect(Collectors.toList());
   }

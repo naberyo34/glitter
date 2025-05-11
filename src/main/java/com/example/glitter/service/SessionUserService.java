@@ -15,7 +15,7 @@ import com.example.glitter.domain.Auth.NotLoginException;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRepository;
 import com.example.glitter.domain.User.UserRepository;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
@@ -40,9 +40,9 @@ public class SessionUserService {
    * @return セッションユーザー
    * @throws NotLoginException セッションユーザーが存在しない場合
    */
-  public UserResponse getMe() {
+  public UserDto getMe() {
     User user = userRepository.getSessionUser().orElseThrow(() -> new NotLoginException("セッションユーザーが存在しません"));
-    return UserResponse.fromEntity(user);
+    return UserDto.fromEntity(user);
   }
 
   /**
@@ -51,8 +51,8 @@ public class SessionUserService {
    * @param userId ユーザーID
    * @return フォロー一覧
    */
-  public List<UserResponse> getFollowing() {
-    UserResponse me = getMe();
+  public List<UserDto> getFollowing() {
+    UserDto me = getMe();
     return followUserListService.getFollowing(me.getUserId());
   }
 
@@ -62,8 +62,8 @@ public class SessionUserService {
    * @param userId ユーザーID
    * @return フォロワー一覧
    */
-  public List<UserResponse> getFollowers() {
-    UserResponse me = getMe();
+  public List<UserDto> getFollowers() {
+    UserDto me = getMe();
     return followUserListService.getFollowers(me.getUserId());
   }
 
@@ -75,7 +75,7 @@ public class SessionUserService {
    * @throws Exception
    */
   public Optional<PostDto> addPost(String content) throws Exception {
-    UserResponse me = getMe();
+    UserDto me = getMe();
     Post post = new Post();
     post.setUserId(me.getUserId());
     post.setDomain(me.getDomain());
@@ -89,10 +89,10 @@ public class SessionUserService {
    * アイコン画像を更新する
    * 
    * @param file
-   * @return userResponse
+   * @return userDto
    * @throws Exception
    */
-  public UserResponse updateIcon(MultipartFile file) throws Exception {
+  public UserDto updateIcon(MultipartFile file) throws Exception {
     User me = userRepository.getSessionUser()
         .orElseThrow(() -> new NotLoginException("セッションユーザーが存在しません"));
     // 既存のアイコン画像を削除
@@ -107,6 +107,6 @@ public class SessionUserService {
     imageWriteService.upload(file, key);
     // データベース上のアイコン画像のパスを更新
     me.setIcon(key);
-    return UserResponse.fromEntity(userRepository.update(me));
+    return UserDto.fromEntity(userRepository.update(me));
   }
 }

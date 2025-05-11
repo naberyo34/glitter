@@ -19,6 +19,16 @@ public class UserRepository {
   private UserMapper userMapper;
 
   /**
+   * ユーザーを追加する
+   * 
+   * @param user
+   */
+  public User insert(User user) {
+    userMapper.insertSelective(user);
+    return user;
+  }
+
+  /**
    * ユーザー ID とドメインからユーザーを取得する
    * 
    * @param userId

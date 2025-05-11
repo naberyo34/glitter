@@ -24,7 +24,7 @@ import com.example.glitter.domain.Follow.FollowRepository;
 import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRepository;
 import com.example.glitter.domain.User.UserRepository;
-import com.example.glitter.domain.User.UserResponse;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
 
@@ -58,7 +58,7 @@ public class SessionUserServiceTest {
     when(userRepository.getSessionUser()).thenReturn(Optional.of(mockUser));
 
     // テスト実行
-    UserResponse user = sessionUserService.getMe();
+    UserDto user = sessionUserService.getMe();
 
     // 検証
     assertEquals("test_user", user.getUserId());
@@ -82,23 +82,23 @@ public class SessionUserServiceTest {
     mockUser.setDomain("example.com");
     mockUser.setUsername("テストユーザー");
 
-    UserResponse mockUserResponse1 = new UserResponse();
-    mockUserResponse1.setUserId("followee1");
-    mockUserResponse1.setDomain("example.com");
-    mockUserResponse1.setUsername("フォロー中1");
+    UserDto mockUserDto1 = new UserDto();
+    mockUserDto1.setUserId("followee1");
+    mockUserDto1.setDomain("example.com");
+    mockUserDto1.setUsername("フォロー中1");
 
-    UserResponse mockUserResponse2 = new UserResponse();
-    mockUserResponse2.setUserId("followee2");
-    mockUserResponse2.setDomain("example.com");
-    mockUserResponse2.setUsername("フォロー中2");
+    UserDto mockUserDto2 = new UserDto();
+    mockUserDto2.setUserId("followee2");
+    mockUserDto2.setDomain("example.com");
+    mockUserDto2.setUsername("フォロー中2");
 
-    List<UserResponse> followingUsers = Arrays.asList(mockUserResponse1, mockUserResponse2);
+    List<UserDto> followingUsers = Arrays.asList(mockUserDto1, mockUserDto2);
 
     when(userRepository.getSessionUser()).thenReturn(Optional.of(mockUser));
     when(followUserListService.getFollowing("test_user")).thenReturn(followingUsers);
 
     // テスト実行
-    List<UserResponse> result = sessionUserService.getFollowing();
+    List<UserDto> result = sessionUserService.getFollowing();
 
     // 検証
     assertThat(result).hasSize(2);
@@ -116,23 +116,23 @@ public class SessionUserServiceTest {
     mockUser.setDomain("example.com");
     mockUser.setUsername("テストユーザー");
 
-    UserResponse mockUserResponse1 = new UserResponse();
-    mockUserResponse1.setUserId("follower1");
-    mockUserResponse1.setDomain("example.com");
-    mockUserResponse1.setUsername("フォロワー1");
+    UserDto mockUserDto1 = new UserDto();
+    mockUserDto1.setUserId("follower1");
+    mockUserDto1.setDomain("example.com");
+    mockUserDto1.setUsername("フォロワー1");
 
-    UserResponse mockUserResponse2 = new UserResponse();
-    mockUserResponse2.setUserId("follower2");
-    mockUserResponse2.setDomain("example.com");
-    mockUserResponse2.setUsername("フォロワー2");
+    UserDto mockUserDto2 = new UserDto();
+    mockUserDto2.setUserId("follower2");
+    mockUserDto2.setDomain("example.com");
+    mockUserDto2.setUsername("フォロワー2");
 
-    List<UserResponse> followers = Arrays.asList(mockUserResponse1, mockUserResponse2);
+    List<UserDto> followers = Arrays.asList(mockUserDto1, mockUserDto2);
 
     when(userRepository.getSessionUser()).thenReturn(Optional.of(mockUser));
     when(followUserListService.getFollowers("test_user")).thenReturn(followers);
 
     // テスト実行
-    List<UserResponse> result = sessionUserService.getFollowers();
+    List<UserDto> result = sessionUserService.getFollowers();
 
     // 検証
     assertThat(result).hasSize(2);
