@@ -39,7 +39,7 @@ public class Actor {
   @Schema(description = "outbox の URL", example = "https://example.com/user/test_user/outbox", requiredMode = Schema.RequiredMode.REQUIRED)
   private String outbox;
 
-  @Schema(description = "アイコン画像", example = "https://example.com/bucketName/test_user/icon.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @Schema(description = "アイコン画像", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private Icon icon;
 
   @Data

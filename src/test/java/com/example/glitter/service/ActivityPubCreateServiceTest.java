@@ -71,7 +71,8 @@ public class ActivityPubCreateServiceTest {
     assertEquals("テスト用のアカウントです。", actor.getSummary());
     assertEquals("https://api.example.com/user/test_user/inbox", actor.getInbox());
     assertEquals("https://api.example.com/user/test_user/outbox", actor.getOutbox());
-    assertEquals("https://storage.example.com/test_user/icon.jpg", actor.getIcon()[0]);
+    assertEquals("Image", actor.getIcon().getType());
+    assertEquals("https://storage.example.com/test_user/icon.jpg", actor.getIcon().getUrl());
 
     PublicKey publicKey = actor.getPublicKey();
     assertEquals("https://api.example.com/user/test_user#main-key", publicKey.getId());

@@ -16,12 +16,14 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import com.example.glitter.domain.ActivityPub.Actor;
+
 /**
  * 通信を伴う処理のため 結合テストとして実施
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class ActivityPubUtilServiceTest {
+public class ExternalFollowServiceTest {
   @LocalServerPort
   private int port;
 
@@ -49,23 +51,24 @@ public class ActivityPubUtilServiceTest {
   }
 
   @Autowired
-  private ActivityPubUtilService activityPubUtilService;
+  private ExternalFollowService externalFollowService;
 
   @Test
-  void 存在するアクターエンドポイントからinboxのURLが取得できる() throws Exception {
+  void 存在するアクターエンドポイントからアクター情報が取得できる() throws Exception {
     // サーバー自身の存在するアクターポイントに問い合わせる
     // テスト実行時はポートがランダムで変わるため、ここで取得した値を用いる
     String currentApiUrl = "http://localhost:" + port;
-    String inboxUrl = activityPubUtilService.getInboxFromActor(currentApiUrl + "/user/test_user");
+    Actor actor = externalFollowService.getActorFromUrl(currentApiUrl + "/user/test_user");
 
+    // とりあえず inbox が取れていればよしとする
     // inbox として返ってくるURLは固定値のため、環境変数の apiUrl を用いて確認
-    assertEquals(apiUrl + "/user/test_user/inbox", inboxUrl);
+    assertEquals(apiUrl + "/user/test_user/inbox", actor.getInbox());
   }
 
   @Test
-  void 存在しないアクターエンドポイントからinboxのURLを取得しようとしたとき例外が返る() throws Exception {
+  void 存在しないアクターエンドポイントからアクター情報を取得しようとしたとき例外が返る() throws Exception {
     try {
-      activityPubUtilService.getInboxFromActor("http://localhost:" + port + "/user/not_exist_user");
+      externalFollowService.getActorFromUrl("http://localhost:" + port + "/user/not_exist_user");
       fail();
     } catch (RuntimeException e) {
       assertNotNull(e);
