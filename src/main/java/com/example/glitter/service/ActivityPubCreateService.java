@@ -161,8 +161,8 @@ public class ActivityPubCreateService {
     // OrderedCollection オブジェクトを作成
     OrderedCollection.OrderedCollectionBuilder<?, ?> builder = OrderedCollection.builder()
         .id(outboxUrl)
-        .totalItems(notes.size())
         // TODO: outbox を真面目に参照している ActivityPub 実装は少ないようなので、今は totalItems だけ返しておく
+        .totalItems(notes.size())
         .orderedItems(Collections.emptyList());
 
     return builder.build();
