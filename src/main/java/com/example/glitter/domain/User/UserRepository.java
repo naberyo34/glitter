@@ -5,6 +5,7 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,9 @@ public class UserRepository {
   @Autowired
   private UserMapper userMapper;
 
+  @Value("${env.domain}")
+  private String domain;
+
   /**
    * ユーザーを追加する
    * 
@@ -26,6 +30,17 @@ public class UserRepository {
   public User insert(User user) {
     userMapper.insertSelective(user);
     return user;
+  }
+
+  /**
+   * ユーザー ID とドメインからユーザーを削除する
+   * 
+   * @param userId
+   * @param userDomain
+   */
+  public void deleteByUserIdAndDomain(String userId, String userDomain) {
+    userMapper.delete(c -> c.where(UserDynamicSqlSupport.userId, isEqualTo(userId))
+        .and(UserDynamicSqlSupport.domain, isEqualTo(userDomain)));
   }
 
   /**
@@ -69,12 +84,12 @@ public class UserRepository {
   }
 
   /**
-   * ユーザーの総数を取得する
+   * Glitter ユーザーの総数を取得する
    * NodeInfo で使っている
    * 
    * @return ユーザーの総数
    */
   public long countAll() {
-    return userMapper.count((c) -> c);
+    return userMapper.count(c -> c.where(UserDynamicSqlSupport.domain, isEqualTo(domain)));
   }
 }

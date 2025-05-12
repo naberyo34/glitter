@@ -35,7 +35,7 @@ public class FollowHandler implements ActivityHandler {
         .build();
     // 今のところは、フォローリクエストを無条件に受け入れる
     try {
-      externalFollowService.acceptFollowRequest(userId, follow);
+      externalFollowService.acceptRequest(userId, follow);
     } catch (Exception e) {
       throw new RuntimeException("フォローリクエストの承認に失敗しました", e);
     }

@@ -2,6 +2,7 @@ package com.example.glitter.service;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public class ExternalFollowService {
    * @param followeeId
    * @param follow
    */
-  public void acceptFollowRequest(String followeeId, ActivityPubFollow follow) throws Exception {
+  public void acceptRequest(String followeeId, ActivityPubFollow follow) throws Exception {
     Accept accept = Accept.builder()
         .id(apiUrl + "/activity/" + UUID.randomUUID())
         .actor(apiUrl + "/user/" + followeeId)
@@ -143,11 +144,31 @@ public class ExternalFollowService {
     // Mastodon も Misskey も成功時は 202 ACCEPTED を返している
     if (response.getStatusCode().toString().equals("202 ACCEPTED")) {
       try {
-        saveExternalFollow(followerActor, followeeId);
+        save(followerActor, followeeId);
       } catch (Exception e) {
         throw new RuntimeException("外部フォローの情報保存に失敗しました", e);
       }
     }
+  }
+
+  /**
+   * Undo リクエストに対応するフォロー関係を削除する
+   * 
+   * @param follow
+   * @throws Exception
+   */
+  public void undo(String followeeId, ActivityPubFollow follow) throws Exception {
+    String followerActorUrl = follow.getActor();
+    Actor followerActor = getActorFromUrl(followerActorUrl);
+
+    // フォロー関係を削除
+    followRepository.delete(
+        followerActor.getPreferredUsername(),
+        URI.create(followerActor.getId()).getHost(),
+        followeeId,
+        domain);
+
+    // TODO: とりあえず外部ユーザーの情報は残している
   }
 
   /**
@@ -158,23 +179,29 @@ public class ExternalFollowService {
    * @param followeeId
    * @throws Exception
    */
-  private void saveExternalFollow(Actor followerActor, String followeeId) throws Exception {
-    // 外部ユーザーの情報を保存
-    UserDto user = UserDto.builder()
-        .userId(followerActor.getPreferredUsername())
-        .domain(URI.create(followerActor.getId()).getHost())
-        .actorUrl(followerActor.getId())
-        .username(followerActor.getName())
-        .profile(followerActor.getSummary())
-        .icon(followerActor.getIcon().getUrl())
-        .build();
-    User resultUser = userRepository.insert(user.toEntity());
-    logger.info("Inserted user: {}", objectMapper.writeValueAsString(resultUser));
-
+  private void save(Actor followerActor, String followeeId) throws Exception {
+    String followerDomain = URI.create(followerActor.getId()).getHost();
+    // 外部ユーザーの情報が存在しない (Glitter アカウントを初めてフォローする外部ユーザーの場合) 情報を保存
+    Optional<User> externalUserOpt = userRepository.findByUserIdAndDomain(followerActor.getPreferredUsername(), followerDomain);
+    if (externalUserOpt.isPresent()) {
+      logger.info("フォローアクションを送信した外部ユーザーがすでに存在します: {}", objectMapper.writeValueAsString(externalUserOpt));
+    } else {
+      UserDto user = UserDto.builder()
+          .userId(followerDomain)
+          .domain(URI.create(followerActor.getId()).getHost())
+          .actorUrl(followerActor.getId())
+          .username(followerActor.getName())
+          .profile(followerActor.getSummary())
+          .icon(followerActor.getIcon().getUrl())
+          .build();
+      externalUserOpt = Optional.of(userRepository.insert(user.toEntity()));
+      logger.info("外部ユーザーを追加しました", objectMapper.writeValueAsString(externalUserOpt));
+    }
+    User externalUser = externalUserOpt.get();
     // フォロー関係も保存
     FollowDto followDto = FollowDto.builder()
-        .followerId(user.getUserId())
-        .followerDomain(user.getDomain())
+        .followerId(externalUser.getUserId())
+        .followerDomain(externalUser.getDomain())
         .followeeId(followeeId)
         .followeeDomain(domain)
         .build();
