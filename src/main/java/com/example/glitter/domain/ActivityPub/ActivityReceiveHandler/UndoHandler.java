@@ -1,4 +1,4 @@
-package com.example.glitter.domain.ActivityPub.ActivityHandler;
+package com.example.glitter.domain.ActivityPub.ActivityReceiveHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * 現状は Follow の Undo のみに対応
  */
 @Component
-public class UndoHandler implements ActivityHandler {
+public class UndoHandler implements ActivityReceiveHandler {
   @Autowired
   private ExternalFollowService externalFollowService;
 

@@ -1,4 +1,4 @@
-package com.example.glitter.domain.ActivityPub.ActivityHandler;
+package com.example.glitter.domain.ActivityPub.ActivityReceiveHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * type: Follow のアクティビティを処理するクラス
  */
 @Component
-public class FollowHandler implements ActivityHandler {
+public class FollowHandler implements ActivityReceiveHandler {
   @Autowired
   private ExternalFollowService externalFollowService;
 

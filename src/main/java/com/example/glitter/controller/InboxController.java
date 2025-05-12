@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.glitter.service.ActivityDispatcherService;
+import com.example.glitter.service.ActivityReceiveDispatcherService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RequestMapping("/user/{id}/inbox")
 public class InboxController {
   @Autowired
-  private ActivityDispatcherService activityDispatcherService;
+  private ActivityReceiveDispatcherService activityReceiveDispatcherService;
 
   @Operation(summary = "アクションに対する応答", description = "外部からInbox宛に通知されたアクションに対して応答を行います。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -37,7 +37,7 @@ public class InboxController {
   @PostMapping("")
   public ResponseEntity<Void> receiveInbox(@PathVariable String id, @RequestBody JsonNode requestBody) {
     try {
-      activityDispatcherService.dispatch(id, requestBody);
+      activityReceiveDispatcherService.dispatch(id, requestBody);
       return ResponseEntity.ok().build();
     } catch (UnsupportedOperationException e) {
       return ResponseEntity.badRequest().build();

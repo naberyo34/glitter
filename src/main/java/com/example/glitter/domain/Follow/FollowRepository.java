@@ -44,7 +44,7 @@ public class FollowRepository {
   public List<Follow> findFollowers(String userId, String userDomain) {
     return followMapper.select(c -> c
         .where(FollowDynamicSqlSupport.followeeId, isEqualTo(userId))
-        .and(FollowDynamicSqlSupport.followerDomain, isEqualTo(userDomain)));
+        .and(FollowDynamicSqlSupport.followeeDomain, isEqualTo(userDomain)));
   }
 
   /**
