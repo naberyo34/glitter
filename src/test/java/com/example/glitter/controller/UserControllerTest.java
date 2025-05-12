@@ -91,13 +91,13 @@ public class UserControllerTest {
         .accept("application/activity+json"))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/activity+json"))
-        .andExpect(jsonPath("$.id").value(apiUrl + "/user/test_user"))
+        .andExpect(jsonPath("$.id").value("https://example.com/user/test_user"))
         .andExpect(jsonPath("$.type").value("Person"))
         .andExpect(jsonPath("$.preferredUsername").value("test_user"))
         .andExpect(jsonPath("$.name").value("テストユーザー"))
         .andExpect(jsonPath("$.summary").value("テスト用のアカウントです。"))
-        .andExpect(jsonPath("$.inbox").value(apiUrl + "/user/test_user/inbox"))
-        .andExpect(jsonPath("$.outbox").value(apiUrl + "/user/test_user/outbox"));
+        .andExpect(jsonPath("$.inbox").value("https://example.com/user/test_user/inbox"))
+        .andExpect(jsonPath("$.outbox").value("https://example.com/user/test_user/outbox"));
   }
 
   @Test

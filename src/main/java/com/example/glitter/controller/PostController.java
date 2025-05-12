@@ -19,8 +19,8 @@ import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRequest;
 import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.service.ActivityPubCreateService;
+import com.example.glitter.service.PostService;
 import com.example.glitter.service.PostWithAuthorService;
-import com.example.glitter.service.SessionUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,9 +32,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/post")
 public class PostController {
   @Autowired
-  private PostWithAuthorService postWithAuthorService;
+  private PostService postService;
   @Autowired
-  private SessionUserService sessionUserService;
+  private PostWithAuthorService postWithAuthorService;
   @Autowired
   private ActivityPubCreateService activityPubCreateService;
 
@@ -81,7 +81,7 @@ public class PostController {
   @PreAuthorize("isAuthenticated()")
   public PostDto addPost(@RequestBody PostRequest content) throws Exception {
     try {
-      return sessionUserService.addPost(content.getContent())
+      return postService.add(content.getContent())
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR));
     } catch (Exception e) {
       throw e;

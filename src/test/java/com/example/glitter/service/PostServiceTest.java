@@ -33,7 +33,7 @@ import com.example.glitter.util.WithMockJwt;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "spring.main.allow-bean-definition-overriding=true")
-public class SessionUserServiceIntegrationTest {
+public class PostServiceTest {
   @LocalServerPort
   private int port;
 
@@ -63,7 +63,7 @@ public class SessionUserServiceIntegrationTest {
   }
 
   @Autowired
-  private SessionUserService sessionUserService;
+  private PostService postService;
   @Autowired
   private RestTemplate restTemplate;
   private MockRestServiceServer mockServer;
@@ -79,14 +79,14 @@ public class SessionUserServiceIntegrationTest {
   @Test
   @WithMockJwt
   void 投稿を作成できる() throws Exception {
-    mockServer.expect(requestTo("http://localhost:8080/user/test_user_2/inbox"))
+    mockServer.expect(requestTo("https://example.com/user/test_user_2/inbox"))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withSuccess());
-    mockServer.expect(requestTo("http://localhost:8080/user/test_user_3/inbox"))
+    mockServer.expect(requestTo("https://example.com/user/test_user_3/inbox"))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withSuccess());
     // テスト実行
-    Optional<PostDto> result = sessionUserService.addPost("テスト投稿");
+    Optional<PostDto> result = postService.add("テスト投稿");
 
     // 検証
     mockServer.verify();

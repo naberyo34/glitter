@@ -38,7 +38,7 @@ public class ActivityPubCreateServiceTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(activityPubCreateService, "apiUrl", "https://api.example.com");
+    ReflectionTestUtils.setField(activityPubCreateService, "apiUrl", "https://example.com");
     ReflectionTestUtils.setField(activityPubCreateService, "domain", "example.com");
     ReflectionTestUtils.setField(activityPubCreateService, "storageUrl", "https://storage.example.com");
     ReflectionTestUtils.setField(activityPubCreateService, "publicKeyPath", "certs/public.pem");
@@ -53,6 +53,7 @@ public class ActivityPubCreateServiceTest {
     mockUser.setUsername("テストユーザー");
     mockUser.setProfile("テスト用のアカウントです。");
     mockUser.setIcon("test_user/icon.jpg");
+    mockUser.setActorUrl("https://example.com/user/test_user");
 
     when(userRepository.findByUserIdAndDomain(mockUser.getUserId(), mockUser.getDomain()))
         .thenReturn(Optional.of(mockUser));
@@ -64,19 +65,19 @@ public class ActivityPubCreateServiceTest {
     assertTrue(actorOpt.isPresent());
     Actor actor = actorOpt.get();
 
-    assertEquals("https://api.example.com/user/test_user", actor.getId());
+    assertEquals("https://example.com/user/test_user", actor.getId());
     assertEquals("Person", actor.getType());
     assertEquals("test_user", actor.getPreferredUsername());
     assertEquals("テストユーザー", actor.getName());
     assertEquals("テスト用のアカウントです。", actor.getSummary());
-    assertEquals("https://api.example.com/user/test_user/inbox", actor.getInbox());
-    assertEquals("https://api.example.com/user/test_user/outbox", actor.getOutbox());
+    assertEquals("https://example.com/user/test_user/inbox", actor.getInbox());
+    assertEquals("https://example.com/user/test_user/outbox", actor.getOutbox());
     assertEquals("Image", actor.getIcon().getType());
     assertEquals("https://storage.example.com/test_user/icon.jpg", actor.getIcon().getUrl());
 
     PublicKey publicKey = actor.getPublicKey();
-    assertEquals("https://api.example.com/user/test_user#main-key", publicKey.getId());
-    assertEquals("https://api.example.com/user/test_user", publicKey.getOwner());
+    assertEquals("https://example.com/user/test_user#main-key", publicKey.getId());
+    assertEquals("https://example.com/user/test_user", publicKey.getOwner());
     assertTrue(publicKey.getPublicKeyPem().startsWith("-----BEGIN PUBLIC KEY-----"));
   }
 
@@ -107,10 +108,10 @@ public class ActivityPubCreateServiceTest {
     // 検証
     assertTrue(noteOpt.isPresent());
     Note note = noteOpt.get();
-    assertEquals("https://api.example.com/post/uuid_1", note.getId());
+    assertEquals("https://example.com/post/uuid_1", note.getId());
     assertEquals("Note", note.getType());
     assertEquals("テスト投稿", note.getContent());
-    assertEquals("https://api.example.com/user/test_user", note.getAttributedTo());
+    assertEquals("https://example.com/user/test_user", note.getAttributedTo());
   }
 
   @Test
@@ -154,7 +155,7 @@ public class ActivityPubCreateServiceTest {
     assertTrue(notesOpt.isPresent());
     OrderedCollection notes = notesOpt.get();
 
-    assertEquals("https://api.example.com/user/test_user/outbox", notes.getId());
+    assertEquals("https://example.com/user/test_user/outbox", notes.getId());
     assertEquals("OrderedCollection", notes.getType());
     assertEquals(2, notes.getTotalItems());
   }
@@ -178,7 +179,7 @@ public class ActivityPubCreateServiceTest {
     assertTrue(notesOpt.isPresent());
     OrderedCollection notes = notesOpt.get();
 
-    assertEquals("https://api.example.com/user/test_user/outbox", notes.getId());
+    assertEquals("https://example.com/user/test_user/outbox", notes.getId());
     assertEquals("OrderedCollection", notes.getType());
     assertEquals(0, notes.getTotalItems());
   }

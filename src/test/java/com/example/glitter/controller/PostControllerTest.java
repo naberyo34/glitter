@@ -120,10 +120,10 @@ public class PostControllerTest {
   @Test
   @WithMockJwt
   void ログイン状態で投稿を追加できる() throws Exception {
-    mockServer.expect(requestTo("http://localhost:8080/user/test_user_2/inbox"))
+    mockServer.expect(requestTo("https://example.com/user/test_user_2/inbox"))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withSuccess());
-    mockServer.expect(requestTo("http://localhost:8080/user/test_user_3/inbox"))
+    mockServer.expect(requestTo("https://example.com/user/test_user_3/inbox"))
         .andExpect(method(HttpMethod.POST))
         .andRespond(withSuccess());
 

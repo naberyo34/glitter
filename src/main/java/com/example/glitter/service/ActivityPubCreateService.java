@@ -107,7 +107,7 @@ public class ActivityPubCreateService {
   }
 
   /**
-   * 内部ユーザー ID から ActivityPub Actor オブジェクトを取得する
+   * ユーザー ID から ActivityPub Actor オブジェクトを取得する
    * 
    * @param userId ユーザーID
    * @return Actor オブジェクト

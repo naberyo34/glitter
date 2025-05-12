@@ -59,8 +59,7 @@ public class ActivityPubCreateServiceIntegrationTest {
     Actor actor = activityPubCreateService.getActorFromUrl(currentApiUrl + "/user/test_user");
 
     // とりあえず inbox が取れていればよしとする
-    // inbox として返ってくるURLは固定値のため、環境変数の apiUrl を用いて確認
-    assertEquals(apiUrl + "/user/test_user/inbox", actor.getInbox());
+    assertEquals("https://example.com/user/test_user/inbox", actor.getInbox());
   }
 
   @Test
