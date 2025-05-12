@@ -4,6 +4,7 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -46,7 +47,12 @@ public class PostRepository {
    * @return 追加した投稿
    */
   public Post insert(Post post) {
+    // UUID はPostgreSQL 側で生成してくれるが、return するためにここで決めておきたい
+    if (post.getUuid() == null) {
+      post.setUuid(UUID.randomUUID().toString());
+    }
     postMapper.insertSelective(post);
-    return post;
+    // uuid から確実に取得できるはずなので get して返す
+    return postMapper.selectByPrimaryKey(post.getUuid()).get();
   }
 }

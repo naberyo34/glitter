@@ -15,7 +15,7 @@ import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.User;
 
 @Service
-public class FollowUserListService {
+public class FollowListService {
   @Autowired
   private FollowRepository followRepository;
   @Autowired

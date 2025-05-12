@@ -45,7 +45,7 @@ public class UserController {
   @Autowired
   private PostWithAuthorService postWithAuthorService;
   @Autowired
-  private ActivityPubCreateService activityCreateService;
+  private ActivityPubCreateService activityPubCreateService;
 
   @Value("${env.domain}")
   private String domain;
@@ -66,7 +66,7 @@ public class UserController {
 
     if (isActivityPubRequest) {
       // ActivityPub Actorとしてユーザー情報を返す
-      return activityCreateService.getActorObject(id)
+      return activityPubCreateService.getActorFromUserId(id)
           .map(actor -> ResponseEntity.ok()
               .contentType(MediaType.parseMediaType("application/activity+json"))
               .body(actor))
@@ -87,7 +87,7 @@ public class UserController {
       }) })
   @GetMapping("/{id}/outbox")
   public ResponseEntity<OrderedCollection> getOutbox(@PathVariable String id) throws ErrorResponseException {
-    return activityCreateService.getOutboxObject(id)
+    return activityPubCreateService.getNotesFromUserId(id)
         .map(outbox -> ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/activity+json"))
             .body(outbox))

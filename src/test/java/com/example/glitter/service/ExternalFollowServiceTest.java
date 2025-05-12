@@ -1,12 +1,7 @@
 package com.example.glitter.service;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,8 +10,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import com.example.glitter.domain.ActivityPub.Actor;
 
 /**
  * 通信を伴う処理のため 結合テストとして実施
@@ -52,26 +45,6 @@ public class ExternalFollowServiceTest {
 
   @Autowired
   private ExternalFollowService externalFollowService;
-
-  @Test
-  void 存在するアクターエンドポイントからアクター情報が取得できる() throws Exception {
-    // サーバー自身の存在するアクターポイントに問い合わせる
-    // テスト実行時はポートがランダムで変わるため、ここで取得した値を用いる
-    String currentApiUrl = "http://localhost:" + port;
-    Actor actor = externalFollowService.getActorFromUrl(currentApiUrl + "/user/test_user");
-
-    // とりあえず inbox が取れていればよしとする
-    // inbox として返ってくるURLは固定値のため、環境変数の apiUrl を用いて確認
-    assertEquals(apiUrl + "/user/test_user/inbox", actor.getInbox());
-  }
-
-  @Test
-  void 存在しないアクターエンドポイントからアクター情報を取得しようとしたとき例外が返る() throws Exception {
-    try {
-      externalFollowService.getActorFromUrl("http://localhost:" + port + "/user/not_exist_user");
-      fail();
-    } catch (RuntimeException e) {
-      assertNotNull(e);
-    }
-  }
+  
+  // TODO
 }

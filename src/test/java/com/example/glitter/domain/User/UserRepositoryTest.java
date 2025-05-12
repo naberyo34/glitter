@@ -1,6 +1,7 @@
 package com.example.glitter.domain.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -89,10 +90,9 @@ public class UserRepositoryTest {
     try {
       User user = userRepository.findByUserIdAndDomain("test_user", "example.com").orElseThrow();
       user.setUsername("更新されたユーザー");
-      userRepository.update(user);
-
-      User updatedUser = userRepository.findByUserIdAndDomain("test_user", "example.com").orElseThrow();
-      assertEquals("更新されたユーザー", updatedUser.getUsername());
+      User result = userRepository.update(user);
+      assertNotNull(result);
+      assertEquals("更新されたユーザー", result.getUsername());
     } catch (Exception e) {
       fail(e);
     }

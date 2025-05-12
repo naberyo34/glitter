@@ -35,5 +35,6 @@ public class Note extends ActivityPubObject {
   @Schema(description = "ノートの公開範囲", example = "https://www.w3.org/ns/activitystreams#Public", requiredMode = Schema.RequiredMode.REQUIRED)
   private final String[] to = {"https://www.w3.org/ns/activitystreams#Public"};
 
-  // TODO: cc
+  @Schema(description = "ノートの cc (フォロワー)", example = "https://example.com/user/test_user/followers", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String cc;
 }

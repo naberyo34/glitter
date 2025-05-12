@@ -21,7 +21,7 @@ public class PostWithAuthor extends PostDto {
   private UserDto user;
 
   public static PostWithAuthor fromEntity(PostDto post, User user) {
-    PostWithAuthor postResponseDto = PostWithAuthor.builder()  
+    PostWithAuthor postWithAuthor = PostWithAuthor.builder()  
       .uuid(post.getUuid())
       .domain(post.getDomain())
       .userId(post.getUserId())
@@ -29,6 +29,6 @@ public class PostWithAuthor extends PostDto {
       .createdAt(post.getCreatedAt())
       .user(UserDto.fromEntity(user))
       .build();
-    return postResponseDto;
+    return postWithAuthor;
   }
 }

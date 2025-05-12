@@ -17,23 +17,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.glitter.domain.Follow.FollowRepository;
-import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.domain.User.UserDto;
+import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Follow;
 import com.example.glitter.generated.User;
 
 @ExtendWith(MockitoExtension.class)
-public class FollowUserListServiceTest {
+public class FollowListServiceTest {
   @Mock
   private FollowRepository followRepository;
   @Mock
   private UserRepository userRepository;
   @InjectMocks
-  private FollowUserListService followUserListService;
+  private FollowListService followListService;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(followUserListService, "domain", "example.com");
+    ReflectionTestUtils.setField(followListService, "domain", "example.com");
   }
 
   @Test
@@ -71,7 +71,7 @@ public class FollowUserListServiceTest {
     when(followRepository.findFollowing(mockUser.getUserId(), mockUser.getDomain())).thenReturn(mockFollows);
 
     // テスト実行
-    List<UserDto> result = followUserListService.getFollowing(mockUser.getUserId());
+    List<UserDto> result = followListService.getFollowing(mockUser.getUserId());
 
     // 検証
     assertThat(result).hasSize(2);
@@ -114,7 +114,7 @@ public class FollowUserListServiceTest {
     when(followRepository.findFollowers(mockUser.getUserId(), mockUser.getDomain())).thenReturn(mockFollows);
 
     // テスト実行
-    List<UserDto> result = followUserListService.getFollowers(mockUser.getUserId());
+    List<UserDto> result = followListService.getFollowers(mockUser.getUserId());
 
     // 検証
     assertThat(result).hasSize(2);

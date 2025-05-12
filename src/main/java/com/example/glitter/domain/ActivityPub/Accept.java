@@ -22,9 +22,9 @@ public class Accept extends ActivityPubObject {
   @Schema(description = "オブジェクトのタイプ", example = "Accept", requiredMode = Schema.RequiredMode.REQUIRED)
   private final String type = "Accept";
 
-  @Schema(description = "承認する Actor Endpoint", example = "https://example.com/user/test_user", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(description = "送信者の Actor Endpoint", example = "https://example.com/user/test_user", requiredMode = Schema.RequiredMode.REQUIRED)
   private String actor;
 
-  @Schema(description = "承認する対象のアクション", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(description = "承認対象のアクション", requiredMode = Schema.RequiredMode.REQUIRED)
   private ActivityPubObject object;
 }

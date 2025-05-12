@@ -16,11 +16,11 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Inbox に送られてきた Activity をハンドリングするクラス
  */
 @Service
-public class ActivityReceiveDispatcherService {
+public class ActivityPubReceiveDispatcherService {
   private final Map<String, ActivityReceiveHandler> handlerMap;
   private Logger logger = LoggerFactory.getLogger(FollowHandler.class);
 
-  public ActivityReceiveDispatcherService(List<ActivityReceiveHandler> handlers) {
+  public ActivityPubReceiveDispatcherService(List<ActivityReceiveHandler> handlers) {
     this.handlerMap = handlers.stream()
         .collect(Collectors.toMap(ActivityReceiveHandler::getType, h -> h));
   }

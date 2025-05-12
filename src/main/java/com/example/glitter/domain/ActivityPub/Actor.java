@@ -1,14 +1,13 @@
 package com.example.glitter.domain.ActivityPub;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 /**
  * ActivityPub のプロトコルに準拠した Actor Object を表す。
@@ -16,15 +15,10 @@ import lombok.Data;
  * @see https://www.w3.org/TR/activitypub/#actor-objects
  */
 @Data
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
 @JsonInclude(Include.NON_NULL)
-public class Actor {
-  @JsonProperty("@context")
-  @Schema(description = "コンテキスト", example = "https://www.w3.org/ns/activitystreams", requiredMode = Schema.RequiredMode.REQUIRED)
-  private final List<String> context = List.of("https://www.w3.org/ns/activitystreams");
-
-  @Schema(description = "アクターエンドポイントの URL", example = "https://example.com/user/test_user", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String id;
+public class Actor extends ActivityPubObject {
   @Schema(description = "Person", example = "Person", requiredMode = Schema.RequiredMode.REQUIRED)
   private final String type = "Person";
   @Schema(description = "ユーザー ID", example = "test_user", requiredMode = Schema.RequiredMode.REQUIRED)

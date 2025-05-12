@@ -6,21 +6,30 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.example.glitter.domain.ActivityPub.Actor;
 import com.example.glitter.domain.ActivityPub.Note;
 import com.example.glitter.domain.ActivityPub.OrderedCollection;
+import com.example.glitter.domain.Post.PostDto;
 import com.example.glitter.domain.Post.PostRepository;
+import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.Post;
 import com.example.glitter.generated.User;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Activity 関連オブジェクトを生成するサービス
@@ -28,9 +37,13 @@ import com.example.glitter.generated.User;
 @Service
 public class ActivityPubCreateService {
   @Autowired
+  private FollowListService followListService;
+  @Autowired
   private UserRepository userRepository;
   @Autowired
   private PostRepository postRepository;
+  @Autowired
+  private RestTemplate restTemplate;
 
   @Value("${env.api-url}")
   private String apiUrl;
@@ -42,12 +55,64 @@ public class ActivityPubCreateService {
   private String publicKeyPath;
 
   /**
-   * ユーザー ID から ActivityPub Actor オブジェクトを取得する
+   * アクターエンドポイントに問い合わせて ActivityPub Actor オブジェクトを取得する
+   * 
+   * @param actorUrl
+   * @return Actor オブジェクト
+   */
+  public Actor getActorFromUrl(String actorUrl) throws Exception {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setAccept(List.of(MediaType.parseMediaType("application/activity+json")));
+    HttpEntity<Void> request = new HttpEntity<>(headers);
+
+    ResponseEntity<JsonNode> response = restTemplate.exchange(
+        actorUrl,
+        HttpMethod.GET,
+        request,
+        JsonNode.class);
+
+    JsonNode actorNode = response.getBody();
+    if (actorNode == null) {
+      throw new RuntimeException("アクター情報の取得に失敗しました");
+    }
+
+    // icon は直で URL が入っている場合 (Glitter) と、type と url に分かれている (外部サービス) 場合がある
+    // とりあえずここで確実に取得できるようにしている
+    String iconUrl;
+    JsonNode iconNode = actorNode.get("icon");
+    if (iconNode == null) {
+      iconUrl = "";
+    } else {
+      if (iconNode.has("url")) {
+        iconUrl = iconNode.get("url").asText();
+      } else {
+        iconUrl = iconNode.asText();
+      }
+    }
+
+    // 取得した JSON を Actor に詰め替えて返す
+    Actor actor = Actor.builder()
+        .id(actorNode.get("id").asText())
+        .preferredUsername(actorNode.get("preferredUsername").asText())
+        .name(actorNode.get("name").asText())
+        .summary(actorNode.has("summary") ? actorNode.get("summary").asText() : "")
+        .inbox(actorNode.get("inbox").asText())
+        .outbox(actorNode.get("outbox").asText())
+        .icon(Actor.Icon.builder()
+            .type("Image")
+            .url(iconUrl)
+            .build())
+        .build();
+    return actor;
+  }
+
+  /**
+   * 内部ユーザー ID から ActivityPub Actor オブジェクトを取得する
    * 
    * @param userId ユーザーID
    * @return Actor オブジェクト
    */
-  public Optional<Actor> getActorObject(String userId) {
+  public Optional<Actor> getActorFromUserId(String userId) {
     return userRepository.findByUserIdAndDomain(userId, domain).map(user -> createActorFromUser(user));
   }
 
@@ -57,25 +122,51 @@ public class ActivityPubCreateService {
    * @param postId
    * @return Note オブジェクト
    */
-  public Optional<Note> getNoteObject(String postId) {
+  public Optional<Note> getNoteFromPostId(String postId) {
     return postRepository.findByUuid(postId).map(post -> {
       return createNoteFromPost(post);
     });
   }
 
   /**
-   * ユーザー ID から ActivityPub Outbox オブジェクトを取得する
+   * 投稿 DTO から ActivityPub Note オブジェクトを取得する
+   * 
+   * @param post 投稿情報
+   * @return Note オブジェクト
+   */
+  public Note getNoteFromPost(PostDto post) {
+    return createNoteFromPost(post.toEntity());
+  }
+
+  /**
+   * ユーザー ID から ActivityPub Followers OrderedCollection オブジェクトを取得する
+   * 
+   * @param userId
+   * @return Followers オブジェクトの OrderedCollection
+   */
+  public Optional<OrderedCollection> getFollowersFromUserId(String userId) {
+    return userRepository.findByUserIdAndDomain(userId, domain).map(_ -> {
+      List<UserDto> followers = followListService.getFollowers(userId);
+      List<Actor> actors = followers.stream()
+          .map(follower -> createActorFromUser(follower.toEntity()))
+          .toList();
+      return createFollowersOrderedCollection(userId, actors);
+    });
+  }
+
+  /**
+   * ユーザー ID から ActivityPub Note OrderedCollection オブジェクトを取得する
    * 
    * @param userId ユーザーID
-   * @return Outbox オブジェクト
+   * @return Note オブジェクトの OrderedCollection
    */
-  public Optional<OrderedCollection> getOutboxObject(String userId) {
-    return userRepository.findByUserIdAndDomain(userId, domain).map(user -> {
+  public Optional<OrderedCollection> getNotesFromUserId(String userId) {
+    return userRepository.findByUserIdAndDomain(userId, domain).map(_ -> {
       List<Post> posts = postRepository.findPostsByUserIdAndDomain(userId, domain);
       List<Note> notes = posts.stream()
           .map(post -> createNoteFromPost(post))
           .toList();
-      return createOutboxFromPosts(user, notes);
+      return createNotesOrderedCollection(userId, notes);
     });
   }
 
@@ -94,18 +185,18 @@ public class ActivityPubCreateService {
     } catch (IOException e) {
       throw new RuntimeException("公開鍵の読み込みに失敗しました", e);
     }
-    String url = apiUrl + "/user/" + user.getUserId();
+    String actorUrl = user.getActorUrl();
     // Actor オブジェクトを構築
     Actor.ActorBuilder builder = Actor.builder()
-        .id(url)
+        .id(actorUrl)
         .preferredUsername(user.getUserId())
-        .inbox(url + "/inbox")
-        .outbox(url + "/outbox")
+        .inbox(actorUrl + "/inbox")
+        .outbox(actorUrl + "/outbox")
         .name(user.getUsername())
         .publicKey(
             Actor.PublicKey.builder()
-                .id(url + "#main-key")
-                .owner(url)
+                .id(actorUrl + "#main-key")
+                .owner(actorUrl)
                 .publicKeyPem(publicKeyPem)
                 .build());
 
@@ -136,35 +227,60 @@ public class ActivityPubCreateService {
     String published = post.getCreatedAt().toInstant().atOffset(ZoneOffset.UTC)
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     String userId = post.getUserId();
-    String actorUrl = apiUrl + "/user/" + userId;
     String noteUrl = apiUrl + "/post/" + post.getUuid();
+    String actorUrl = apiUrl + "/user/" + userId;
+    String ccUrl = apiUrl + "/user/" + userId + "/followers";
 
     return Note.builder()
         .id(noteUrl)
         .content(post.getContent())
         .published(published)
         .attributedTo(actorUrl)
+        .cc(ccUrl)
         .build();
   }
 
   /**
-   * 投稿のリストから ActivityPub OrderedCollection オブジェクトを生成する
-   * Outbox 向けに利用します。
+   * フォロワーのリストから ActivityPub OrderedCollection オブジェクトを生成する
    * 
-   * @param user  ユーザー情報
-   * @param notes ノートのリスト
+   * @param userId ユーザー ID
+   * @param actors フォロワーのリスト
    * @return OrderedCollection オブジェクト
    */
-  private OrderedCollection createOutboxFromPosts(User user, List<Note> notes) {
-    String outboxUrl = apiUrl + "/user/" + user.getUserId() + "/outbox";
+  private OrderedCollection createFollowersOrderedCollection(String userId, List<Actor> actors) {
+    String followersUrl = apiUrl + "/user/" + userId + "/followers";
 
     // OrderedCollection オブジェクトを作成
-    OrderedCollection.OrderedCollectionBuilder<?, ?> builder = OrderedCollection.builder()
-        .id(outboxUrl)
-        // TODO: outbox を真面目に参照している ActivityPub 実装は少ないようなので、今は totalItems だけ返しておく
-        .totalItems(notes.size())
-        .orderedItems(Collections.emptyList());
+    // あまり行儀はよくないが とりあえず キャスト
+    List<Object> orderedItems = new ArrayList<>(actors);
+    OrderedCollection orderedCollection = OrderedCollection.builder()
+        .id(followersUrl)
+        .totalItems(actors.size())
+        .orderedItems(orderedItems)
+        .build();
 
-    return builder.build();
+    return orderedCollection;
+  }
+
+  /**
+   * 投稿のリストから ActivityPub OrderedCollection オブジェクトを生成する
+   * 
+   * @param userId ユーザー ID
+   * @param notes  ノートのリスト
+   * @return OrderedCollection オブジェクト
+   */
+  private OrderedCollection createNotesOrderedCollection(String userId, List<Note> notes) {
+    String outboxUrl = apiUrl + "/user/" + userId + "/outbox";
+
+    // OrderedCollection オブジェクトを作成
+    // あまり行儀はよくないが とりあえず キャスト
+    List<Object> orderedItems = new ArrayList<>(notes);
+    OrderedCollection orderedCollection = OrderedCollection.builder()
+        .id(outboxUrl)
+        .totalItems(notes.size())
+        .orderedItems(orderedItems)
+        .build();
+
+    return orderedCollection;
   }
 }

@@ -72,8 +72,8 @@ public class ActivityPubSignatureService {
       Signer signer = new Signer(privateKey, signature);
 
       String method = "post";
-      String requestUri = URI.create(targetInboxUrl).getRawPath();
-      Signature signed = signer.sign(method, requestUri, headers);
+      String path = URI.create(targetInboxUrl).getRawPath();
+      Signature signed = signer.sign(method, path, headers);
 
       // リクエストボディとヘッダーを組み合わせて HttpEntity を作成
       String authorizationHeader = signed.toString();

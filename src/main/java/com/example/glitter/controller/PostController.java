@@ -36,7 +36,7 @@ public class PostController {
   @Autowired
   private SessionUserService sessionUserService;
   @Autowired
-  private ActivityPubCreateService activityCreateService;
+  private ActivityPubCreateService activityPubCreateService;
 
   @Operation(summary = "IDから投稿を取得", description = "IDからユーザー情報を含む投稿を取得します。Acceptヘッダーが application/activity+json の場合はActivityPub Note形式でJSONを返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -54,7 +54,7 @@ public class PostController {
 
     if (isActivityPubRequest) {
       // ActivityPub Noteとして投稿情報を返す
-      return activityCreateService.getNoteObject(id)
+      return activityPubCreateService.getNoteFromPostId(id)
           .map(actor -> ResponseEntity.ok()
               .contentType(MediaType.parseMediaType("application/activity+json"))
               .body(actor))
@@ -79,12 +79,12 @@ public class PostController {
   })
   @PostMapping("")
   @PreAuthorize("isAuthenticated()")
-  public PostDto addPost(@RequestBody PostRequest content) throws ErrorResponseException {
+  public PostDto addPost(@RequestBody PostRequest content) throws Exception {
     try {
       return sessionUserService.addPost(content.getContent())
           .orElseThrow(() -> new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR));
     } catch (Exception e) {
-      throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR);
+      throw e;
     }
   }
 }

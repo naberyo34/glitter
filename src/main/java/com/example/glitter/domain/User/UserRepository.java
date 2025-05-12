@@ -3,6 +3,7 @@ package com.example.glitter.domain.User;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +29,13 @@ public class UserRepository {
    * @param user
    */
   public User insert(User user) {
+    // UUID はPostgreSQL 側で生成してくれるが、return するためにここで決めておきたい
+    if (user.getUuid() == null) {
+      user.setUuid(UUID.randomUUID().toString());
+    }
     userMapper.insertSelective(user);
-    return user;
+    // uuid から確実に取得できるはずなので get して返す
+    return userMapper.selectByPrimaryKey(user.getUuid()).get();
   }
 
   /**
@@ -62,7 +68,7 @@ public class UserRepository {
    */
   public User update(User user) {
     userMapper.updateByPrimaryKey(user);
-    return user;
+    return userMapper.selectByPrimaryKey(user.getUuid()).get();
   }
 
   /**
