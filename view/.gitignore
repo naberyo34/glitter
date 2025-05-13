@@ -12,4 +12,9 @@
 /api/api-docs.yaml
 .env.*
 !.env.example
-.dev.vars
+*.vars
+
+## Panda
+styled-system
+styled-system-studio
+*storybook.log

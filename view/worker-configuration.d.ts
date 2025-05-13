@@ -4,7 +4,6 @@
 declare namespace Cloudflare {
 	interface Env {
 		API_URL: string;
-		STORAGE_URL: string;
 	}
 }
 interface Env extends Cloudflare.Env {}

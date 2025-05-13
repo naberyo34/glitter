@@ -4,13 +4,45 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  isRouteErrorResponse
+  isRouteErrorResponse,
+  useLoaderData
 } from 'react-router';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Route } from './+types/root';
-import './index.css';
+import { GlitterApiProvider } from './hooks/useGlitterApi';
+import styles from './index.css?url';
+
+export const links: Route.LinksFunction = () => [
+  { rel: 'stylesheet', href: styles },
+];
+
+export const meta: Route.MetaFunction = () => {
+  return [
+    {
+      title: 'Glitter',
+    },
+    {
+      property: 'og:title',
+      content: 'Glitter',
+    },
+    {
+      name: 'description',
+      content: 'tama の おひとりさま ActivityPub クライアント',
+    },
+  ];
+};
+
+const queryClient = new QueryClient();
+
+export async function loader({ context }: Route.LoaderArgs) {
+  return {
+    context,
+  };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { context } = useLoaderData<typeof loader>();
   return (
     <html lang="ja">
       <head>
@@ -20,7 +52,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <GlitterApiProvider apiUrl={context.cloudflare.env.API_URL}>
+            {children}
+          </GlitterApiProvider>
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

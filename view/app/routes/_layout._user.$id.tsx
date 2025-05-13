@@ -1,49 +1,38 @@
-import { createGlitterApiClient } from '~/api/client';
-import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { createGlitterApiClient } from 'api/client';
+import { Post } from 'app/components/module/Post/Post';
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
+import type { Route } from './+types/_layout';
+import { UserDetail } from 'app/features/UserDetail/UserDetail';
 
-export async function loader({ params, context }: LoaderFunctionArgs) {
+export async function loader({ params, context }: Route.LoaderArgs) {
   if (!params.id) {
     throw new Response(null, { status: 404 });
   }
 
-  const glitterApiClient = createGlitterApiClient(context.cloudflare.env.API_URL);
-
-  const { data: user, error: userError } = await glitterApiClient.GET(
-    '/user/{id}',
-    {
-      params: { path: { id: params.id } },
-    },
+  const glitterApiClient = createGlitterApiClient(
+    context.cloudflare.env.API_URL,
   );
   const { data: posts } = await glitterApiClient.GET('/user/{id}/post', {
     params: { path: { id: params.id } },
   });
 
-  if (userError) {
-    throw new Response(null, {
-      status: userError.status,
-      statusText: userError.title,
-    });
+  if (posts === undefined) {
+    throw new Response(null, { status: 404 });
   }
 
   return {
-    user: {
-      ...user,
-      posts,
-    },
+    posts,
   };
 }
 
 export default function User() {
-  const { user } = useLoaderData<typeof loader>();
+  const { posts } = useLoaderData<typeof loader>();
 
   return (
-    <section>
-      <h1>{user.username}</h1>
-      <ul>
-        {user.posts?.map((post) => (
-          <li key={post.id}>{post.content}</li>
-        ))}
-      </ul>
-    </section>
+    <ul>
+      {posts?.map((post) => (
+        <Post key={post.uuid} post={post} userDetail={<UserDetail post={post} />} />
+      ))}
+    </ul>
   );
 }

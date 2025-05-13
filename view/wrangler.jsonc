@@ -13,6 +13,10 @@
   // see: https://github.com/yusukebe/hono-react-router-adapter
   "assets": {
     "directory": "./build/client"
+  },
+  "build": {
+    "watch_dir": "/app",
+    "command": "npm run build",
   }
   /**
    * Smart Placement
