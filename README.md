@@ -9,6 +9,8 @@
 - Hono
 - Tanstack Query
 - OpenAPI-fetch
+- Ark UI
+- Panda CSS
 
 ### サーバーサイド
 - Spring Boot
