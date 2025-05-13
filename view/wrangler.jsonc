@@ -16,7 +16,19 @@
   },
   "build": {
     "watch_dir": "/app",
-    "command": "npm run build",
+    "command": "npm run build"
+  },
+  "vars": {
+    "ENV": "development",
+    "API_URL": "http://localhost:8080"
+  },
+  "env": {
+    "production": {
+      "vars": {
+        "ENV": "production",
+        "API_URL": "https://glitter.momochitama.com"
+      }
+    }
   }
   /**
    * Smart Placement

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes } from 'react';
 import { Link, type LinkProps } from 'react-router';
 import { cva } from 'styled-system/css';
 
@@ -9,6 +9,9 @@ export type ButtonProps = (
   | ({
       as: 'link';
     } & LinkProps)
+  | ({
+      as: 'a';
+    } & AnchorHTMLAttributes<HTMLAnchorElement>)
   | ({
       as: 'div';
     } & HTMLAttributes<HTMLDivElement>)
@@ -24,6 +27,13 @@ export function Button(props: ButtonProps) {
     // memo: as は除去
     const { as, color, ...linkProps } = props;
     return <Link className={buttonStyles({ color: color })} {...linkProps} />;
+  }
+
+  // a タグとして振る舞う
+  if (props.as === 'a') {
+    // memo: as は除去
+    const { as, color, ...anchorProps } = props;
+    return <a className={buttonStyles({ color: color })} {...anchorProps} />;
   }
 
   // div として振る舞う 見た目だけ欲しい場合に使う

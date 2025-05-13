@@ -1,8 +1,8 @@
 import { createGlitterApiClient } from 'api/client';
 import { Post } from 'app/components/module/Post/Post';
-import { type LoaderFunctionArgs, useLoaderData } from 'react-router';
-import type { Route } from './+types/_layout';
 import { UserDetail } from 'app/features/UserDetail/UserDetail';
+import { useLoaderData } from 'react-router';
+import type { Route } from './+types/_layout';
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   if (!params.id) {
@@ -31,7 +31,11 @@ export default function User() {
   return (
     <ul>
       {posts?.map((post) => (
-        <Post key={post.uuid} post={post} userDetail={<UserDetail post={post} />} />
+        <Post
+          key={post.uuid}
+          post={post}
+          userDetail={<UserDetail post={post} />}
+        />
       ))}
     </ul>
   );

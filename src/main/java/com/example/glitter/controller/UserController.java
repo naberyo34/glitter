@@ -126,6 +126,20 @@ public class UserController {
     return sessionUserService.getMe();
   }
 
+  @Operation(summary = "セッションユーザーの投稿を取得", description = "セッションユーザーの投稿を取得します。ログインしていない場合は 401 が返ります。", responses = {
+      @ApiResponse(responseCode = "200", description = "OK", content = {
+          @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostWithAuthor.class)))
+      }),
+      @ApiResponse(responseCode = "401", description = "ログインしていないとき", content = {
+          @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))
+      })
+  })
+  @GetMapping("/me/post")
+  @PreAuthorize("isAuthenticated()")
+  public List<PostWithAuthor> getMyPosts() throws ErrorResponseException {
+    return sessionUserService.getPosts();
+  }
+
   @Operation(summary = "アイコン画像の更新", description = "アイコン画像を更新します。ログインが必須です。成功時はアイコン画像のパス情報を含む userDto を返します。", responses = {
       @ApiResponse(responseCode = "200", description = "OK", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))

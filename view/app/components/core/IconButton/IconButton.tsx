@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes } from 'react';
 import { Link, type LinkProps } from 'react-router';
 import { css } from 'styled-system/css';
 
@@ -9,6 +9,9 @@ export type IconButtonProps =
   | ({
       as: 'link';
     } & LinkProps)
+  | ({
+      as: 'a';
+    } & AnchorHTMLAttributes<HTMLAnchorElement>)
   | ({
       as: 'div';
     } & HTMLAttributes<HTMLDivElement>);
@@ -23,6 +26,13 @@ export function IconButton(props: IconButtonProps) {
     // memo: as は除去
     const { as, ...linkProps } = props;
     return <Link className={iconButtonStyles} {...linkProps} />;
+  }
+
+  // a タグとして振る舞う
+  if (props.as === 'a') {
+    // memo: as は除去
+    const { as, ...anchorProps } = props;
+    return <a className={iconButtonStyles} {...anchorProps} />;
   }
 
   // div として振る舞う 見た目だけ欲しい場合に使う

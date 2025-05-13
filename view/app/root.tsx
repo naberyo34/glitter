@@ -5,13 +5,15 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
-  useLoaderData
+  useLoaderData,
 } from 'react-router';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import cookie from 'cookie';
 import type { Route } from './+types/root';
 import { GlitterApiProvider } from './hooks/useGlitterApi';
 import styles from './index.css?url';
+import { createGlitterApiClient } from 'api/client';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'stylesheet', href: styles },
@@ -35,8 +37,33 @@ export const meta: Route.MetaFunction = () => {
 
 const queryClient = new QueryClient();
 
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const cookieHeader = request.headers.get('Cookie');
+  if (!cookieHeader) {
+    return {
+      context,
+    };
+  }
+
+  const cookies = cookie.parse(cookieHeader);
+  const authToken = cookies.authToken;
+  if (!authToken) {
+    return {
+      context,
+    };
+  }
+
+  const glitterApiClient = createGlitterApiClient(
+    context.cloudflare.env.API_URL,
+  );
+  const { data: me } = await glitterApiClient.GET('/user/me', {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+
   return {
+    me,
     context,
   };
 }

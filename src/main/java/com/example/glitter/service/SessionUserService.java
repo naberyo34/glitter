@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.glitter.domain.Auth.NotLoginException;
+import com.example.glitter.domain.Post.PostDto;
+import com.example.glitter.domain.Post.PostWithAuthor;
 import com.example.glitter.domain.User.UserDto;
 import com.example.glitter.domain.User.UserRepository;
 import com.example.glitter.generated.User;
@@ -23,6 +26,11 @@ public class SessionUserService {
   private FollowListService followListService;
   @Autowired
   private ImageWriteService imageWriteService;
+  @Autowired
+  private PostWithAuthorService postWithAuthorService;
+
+  @Value("${env.domain}")
+  private String domain;
 
   /**
    * 自身のユーザー情報を取得する
@@ -33,6 +41,17 @@ public class SessionUserService {
   public UserDto getMe() {
     User user = userRepository.getSessionUser().orElseThrow(() -> new NotLoginException("セッションユーザーが存在しません"));
     return UserDto.fromEntity(user);
+  }
+
+  /**
+   * 自身の投稿を取得する
+   * 
+   * @return 投稿のリスト
+   * @throws NotLoginException セッションユーザーが存在しない場合
+   */
+  public List<PostWithAuthor> getPosts() {
+    UserDto me = getMe();
+    return postWithAuthorService.findPostsByUserIdAndDomain(me.getUserId(), domain);
   }
 
   /**
