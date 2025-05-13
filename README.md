@@ -6,11 +6,14 @@
 ## 技術
 ### フロントエンド
 - React Router v7
-- Hono
 - Tanstack Query
 - OpenAPI-fetch
 - Ark UI
 - Panda CSS
+
+### BFF (というほどのものではない)
+- Hono
+- Zod
 
 ### サーバーサイド
 - Spring Boot
