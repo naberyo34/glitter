@@ -1,3 +1,29 @@
 # Glitter
 
 ## この混沌とした令和のインターネットを照らす一筋の光
+- 1人用の ActivityPub 実装です。Mastodon や Misskey のユーザーからフォローされ、ポストを見てもらうことができます。
+
+## 技術
+### フロントエンド
+- React Router v7
+- Hono
+- Tanstack Query
+- OpenAPI-fetch
+
+### サーバーサイド
+- Spring Boot
+- MyBatis
+- MyBatis Generation
+- MyBatis Migration
+
+### インフラ
+#### フロントエンド
+- Cloudflare Workers
+- Cloudflare Register
+
+#### サーバーサイド
+- AWS EC2
+- S3
+- RDS (PostgreSQL)
+- ELB
+- Cognito
